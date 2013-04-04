@@ -29,8 +29,8 @@ giraph = (function(){
             var e = new edge(id, v1, v2, weight, extra);
 
             edges[id] = e;
-            vertices[v1].neighbors[v2] = id;
-            vertices[v2].neighbors[v1] = id;
+            vertices[v1]._neighbors[v2] = id;
+            vertices[v2]._neighbors[v1] = id;
             return this;
         };
         // remove an edge
@@ -39,9 +39,9 @@ giraph = (function(){
             if (!(v1 in vertices && v2 in vertices)){
                 return; // gracefully exit without removing edge
             }
-            var id = vertices[v1].neighbors[v2];
-            delete vertices[v1].neighbors[v2];
-            delete vertices[v2].neighbors[v1];
+            var id = vertices[v1]._neighbors[v2];
+            delete vertices[v1]._neighbors[v2];
+            delete vertices[v2]._neighbors[v1];
             delete edges[id];
             return this;
         };
@@ -50,10 +50,10 @@ giraph = (function(){
             if (!(v in vertices)){
                 return; // gracefully exit
             }
-            var neighbors = Object.keys(vertices[v].neighbors);
+            var neighbors = Object.keys(vertices[v]._neighbors);
             for (var i = 0; i < neighbors.length; i++){
                 delete edges[neighbors[i]];
-                delete vertices[neighbors[i]].neighbors[v];
+                delete vertices[neighbors[i]]._neighbors[v];
             }
             delete vertices[v];
             return this;
@@ -70,7 +70,7 @@ giraph = (function(){
             if (!(v1 in vertices && v2 in vertices)){
                 return false; // gracefully exit
             }
-            return edges[vertices[v1].neighbors[v2]];
+            return edges[vertices[v1]._neighbors[v2]];
         };
         // get the size of the graph (number of edges)
         this.size = function(){
@@ -105,7 +105,6 @@ giraph = (function(){
             if (sortfn) values.sort(sortfn);
             var edge_keys = [];
             for (var i = 0; i < values.length; i++){
-                console.log(values[i].weight());
                 edge_keys.push(values[i].id());
             }
             var endpts = [];
@@ -138,19 +137,19 @@ giraph = (function(){
         else {
             extra = aextra;
         }
-        var neighbors = {}; // key neighbor, value edge index
+        this._neighbors = {}; // key neighbor, value edge index
 
         // returns the desired neighbor
         this.neighbor = function(v){
-            if (!(v in neighbors)){
+            if (!(v in this._neighbors)){
                 return false; // gracefully exit
             }
-            return neighbors[v];
+            return this._neighbors[v];
         };
 
         // returns the ids for all of the neighbors
         this.neighbors = function(){
-            return Object.keys(neighbors);
+            return Object.keys(this._neighbors);
         };
         // returns the id
         this.id = function(){
@@ -218,13 +217,11 @@ giraph = (function(){
             var MST = [];
             var weight = 0;
             var verts = graph.vertices();
-            console.log(verts);
             var set = {};
             // sort the edges from lowest weight to highest weight
             var edges = graph.edges(function(a,b){
                 return a.weight()-b.weight();
             });
-            console.log(edges);
             for (var i = 0; i < verts.length; i++){
                 set[verts[i]] = i;
             }
@@ -236,11 +233,9 @@ giraph = (function(){
                     MST.push(edges[i]);
                     weight += graph.edge(start, end).weight();
                     var set_keys = Object.keys(set);
-                    console.log(set_keys);
                     // update the disjoint sets
                     if (set[start] < set[end]){
                         for (var j = 0; j < set_keys.length; j++){
-                            console.log(set[set_keys[j]],set[end]);
                             if (set[set_keys[j]] === set[end]){
                                 set[set_keys[j]] = set[start];
                             }
@@ -253,11 +248,53 @@ giraph = (function(){
                             }
                         }
                     }
-                    console.log(start, end, graph.edge(start, end).weight());
-                    console.log("set", set);
                 }
             }
             return {MST: MST, weight: weight};
+        },
+        // the abstract search function
+        // orderingStucture must have add, size, and remove functions
+        search: function(graph, orderingStructure, start, target){
+            var reached = {};
+            orderingStructure.add(start);
+            var order = [];
+            var steps = 0;
+            while (orderingStructure.size() > 0){
+                steps++;
+                var current = orderingStructure.remove();
+                reached[current] = true;
+                if (current === target){
+                    return {vertex: graph.vertex(current), order: order};
+                }
+                var neighbors = graph.vertex(current).neighbors();
+                order.push(current);
+                // add unreached neighbors
+                for (var i = 0; i < neighbors.length; i++){
+                    if (!(neighbors[i] in reached || orderingStructure.exists(neighbors[i]))){
+                        orderingStructure.add(neighbors[i]);
+                    }
+                }
+            }
+            return false; // not connected
+        },
+        // BFS Search
+        BFS: function(graph, start, target){
+            var orderingStructure = function(){
+                var verts = [];
+                this.add = function(v){
+                    verts.push(v);
+                };
+                this.remove =  function(){
+                    return verts.shift();
+                };
+                this.size = function(){
+                    return verts.length;
+                };
+                this.exists = function(v){
+                    return verts.indexOf(v) != -1;
+                };
+            };
+            return this.search(graph, new orderingStructure(), start, target);
         }
     };
 

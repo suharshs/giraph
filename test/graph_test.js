@@ -23,6 +23,7 @@ test("add_edge", function(){
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
     ok(g.edge(1,2).weight() === 3, "edge was added");
+    console.log(g.vertex(1).neighbor(2));
     ok(g.vertex(1).neighbor(2) !== undefined, "vertex updated");
 });
 
@@ -46,4 +47,5 @@ test("remove_edge", function(){
     g.remove_edge(1,2);
     ok(!g.edge(1,2), "edge was removed");
     ok(!g.vertex(1).neighbor(2), "vertex updated");
+    ok(!g.vertex(2).neighbor(1), "vertex updated");
 });
