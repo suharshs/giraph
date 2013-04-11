@@ -428,6 +428,11 @@ giraph = (function(){
         }
     };
 
+    // the visualizations for a graph
+    var viz = {
+
+    };
+
     // return the public methods
     return {
         // returns a new empty graph
@@ -441,7 +446,8 @@ giraph = (function(){
             }
         },
         // provides algorithm functionality
-        alg: alg
+        alg: alg,
+        viz: viz
     };
 
 })();
