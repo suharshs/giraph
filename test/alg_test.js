@@ -2,7 +2,7 @@
 
 // tests kruskal algorithm
 test("kruskalMST", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex("A").add_vertex("B").add_vertex("C").add_vertex("D").add_vertex("E");
     g.add_edge("A", "B", 7).add_edge("A", "E", 5).add_edge("A", "D", 3)
     .add_edge("E", "B", 3).add_edge("C", "B", 4).add_edge("C", "D", 9);
@@ -12,7 +12,7 @@ test("kruskalMST", function(){
 
 // tests BFS search
 test("search", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex("A").add_vertex("B").add_vertex("C").add_vertex("D").add_vertex("E");
     g.add_edge("A", "B", 7).add_edge("A", "E", 5).add_edge("A", "D", 3)
     .add_edge("E", "B", 3).add_edge("C", "B", 4).add_edge("C", "D", 9);

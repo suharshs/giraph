@@ -2,14 +2,14 @@
 
 // tests the blank constructor
 test("constructor", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     ok(g.order() === 0, "empty set of vertices");
     ok(g.size() === 0, "empty set of edges");
 });
 
 // tests if adding a vertex working correctly
 test("add_vertex", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex(1, 2, 3);
     ok(g.vertex(1).id() === 1, "id set correctly");
     ok(g.vertex(1).weight() === 2, "weight set correctly");
@@ -18,7 +18,7 @@ test("add_vertex", function(){
 
 // tests if edges are added correctly
 test("add_edge", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
@@ -28,7 +28,7 @@ test("add_edge", function(){
 
 // tests if vertices are removed correctly
 test("remove_vertex", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
@@ -39,7 +39,7 @@ test("remove_vertex", function(){
 
 // tests if edges are removed correctly
 test("remove_edge", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
@@ -51,14 +51,14 @@ test("remove_edge", function(){
 
 // tests the blank constructor
 test("directed constructor", function(){
-    var g = giraph.digraph();
+    var g = giraph.graph.digraph();
     ok(g.order() === 0, "empty set of vertices");
     ok(g.size() === 0, "empty set of edges");
 });
 
 // tests if adding a vertex working correctly
 test("directed add_vertex", function(){
-    var g = giraph.digraph();
+    var g = giraph.graph.digraph();
     g.add_vertex(1, 2, 3);
     ok(g.vertex(1).id() === 1, "id set correctly");
     ok(g.vertex(1).weight() === 2, "weight set correctly");
@@ -67,7 +67,7 @@ test("directed add_vertex", function(){
 
 // tests if edges are added correctly
 test("directed add_edge", function(){
-    var g = giraph.digraph();
+    var g = giraph.graph.digraph();
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
@@ -79,7 +79,7 @@ test("directed add_edge", function(){
 
 // tests if vertices are removed correctly
 test("directed remove_vertex", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
@@ -90,7 +90,7 @@ test("directed remove_vertex", function(){
 
 // tests if edges are removed correctly
 test("directed remove_edge", function(){
-    var g = giraph.graph();
+    var g = giraph.graph.graph();
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
