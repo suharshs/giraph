@@ -72,7 +72,6 @@ test("directed add_edge", function(){
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
     ok(g.edge(1,2).weight() === 3, "edge was added");
-    console.log(g.vertex(2).in_neighbors());
     ok(g.vertex(2).in_neighbors()[0] === "1", "edge was added");
     ok(g.vertex(2).neighbors().length === 0, "no out neighbors for 2");
     ok(g.vertex(1).is_neighbor(2) !== undefined, "vertex updated");

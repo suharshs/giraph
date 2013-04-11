@@ -431,12 +431,14 @@ giraph = (function(){
     // return the public methods
     return {
         // returns a new empty graph
-        graph: function(){
-            return new graph();
-        },
-        // returns a new digraph
-        digraph: function(){
-            return new digraph();
+        graph: {
+            graph :function(){
+                return new graph();
+            },
+            // returns a new digraph
+            digraph: function(){
+                return new digraph();
+            }
         },
         // provides algorithm functionality
         alg: alg
