@@ -1,0 +1,23 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+    <title>graph visualizer</title> 
+    <script type="text/javascript" src="../resources/bonsai-0.4.1.min.js"></script>
+    <script type="text/javascript" src="../giraph.js"></script>
+    <style type="text/css">
+        body {
+            background-color: rgb(40,39,34);
+        }
+    </style>
+</head>  
+<body>  
+    <div id="graph-pane"></div>
+    <script type="text/javascript">
+        bonsai.run(document.getElementById('graph-pane'), {
+            url: 'graph-viz.js',
+            width: 1300,
+            height: 500
+        });
+    </script>
+</body>
+</html>  

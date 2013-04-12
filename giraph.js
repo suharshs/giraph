@@ -223,7 +223,8 @@ giraph = (function(){
 
     // private directed vertex constructor
     var vertex = function(aid, aweight, aextra){
-        var id, weight, extra;
+        var id, weight, extra, color, x, y;
+        color = "rgba(50,50,50)";
         // set this vertex's information
         if (aid === undefined){
             throw new Error("vertex object requires an id");
@@ -262,11 +263,13 @@ giraph = (function(){
         this.weight = function(aweight){
             if (aweight === undefined) return weight;
             weight = aweight;
+            return this;
         };
         // getter and setter of extra
         this.extra = function(aextra){
             if (aextra === undefined) return extra;
             extra = aextra;
+            return this;
         };
         // returns boolean if the vertex is a neighbor
         this.is_neighbor = function(v){
@@ -276,11 +279,24 @@ giraph = (function(){
         this.is_in_neighbor = function(v){
             return (this._in_neighbors[v] !== undefined);
         };
+        // getter and setter of color
+        this.color = function(col){
+            if (col === undefined) return color;
+            color = col;
+            return this;
+        };
+        // getter and setter of position
+        this.position = function(ax,ay){
+            if (ax === undefined || ay === undefined) return [x,y];
+            x = ax;
+            y = ay;
+            return this;
+        };
     };
 
     // private edge constructor
     var edge = function(aid, av1, av2, aweight, aextra) {
-        var id, endpoints, weight, extra;
+        var id, endpoints, weight, extra, color;
         // set this vertex's information
         if (aid === undefined || av1 === undefined || av2 === undefined){
             throw new Error("edge object requires an id and two endpoint vertices");
@@ -309,16 +325,25 @@ giraph = (function(){
         this.weight = function(aweight){
             if (aweight === undefined) return weight;
             weight = aweight;
+            return this;
         };
         // getter and setter of extra
         this.extra = function(aextra){
             if (aextra === undefined) return extra;
             extra = aextra;
+            return this;
         };
         // get the endpoints of this edge
         this.endpoints = function(v1,v2){
             if (v1 === undefined || v2 === undefined) return endpoints;
             endpoints = [v1,v2];
+            return this;
+        };
+        // getter and setter of color
+        this.color = function(col){
+            if (col === undefined) return color;
+            color = col;
+            return this;
         };
     };
 
@@ -408,6 +433,7 @@ giraph = (function(){
             };
             return this.search(graph, new orderingStructure(), start, target);
         },
+        // DFS Search
         DFS: function(graph, start, target){
             var orderingStructure = function(){
                 var verts = [];
@@ -430,7 +456,10 @@ giraph = (function(){
 
     // the visualizations for a graph
     var viz = {
+        // binds a graph to a visualization in a div and creates the visualization
+        bind: function(){
 
+        }
     };
 
     // return the public methods
