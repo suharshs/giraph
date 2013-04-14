@@ -27,11 +27,12 @@ giraph = (function(){
             var id = edge_id;
             edge_id++;
             var e = new edge(id, v1, v2, weight, extra);
-
             edges[id] = e;
             // only add in this direction
-            vertices[v1]._out_neighbors[v2] = id;
-            vertices[v2]._in_neighbors[v1] = id;
+            vertices[v1]._out_neighbors[v2] = this.vertex(v2);
+            vertices[v2]._in_neighbors[v1] = this.vertex(v1);
+            vertices[v1]._out_edges[v2] = e;
+            vertices[v2]._in_edges[v1] = e;
             return this;
         };
         // remove an edge
@@ -43,6 +44,8 @@ giraph = (function(){
             var id = vertices[v1]._out_neighbors[v2];
             delete vertices[v1]._out_neighbors[v2];
             delete vertices[v2]._in_neighbors[v1];
+            delete vertices[v1]._out_edges[v2];
+            delete vertices[v2]._in_edges[v1];
             delete edges[id];
             return this;
         };
@@ -56,12 +59,14 @@ giraph = (function(){
             for (var i = 0; i < neighbors.length; i++){
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._out_neighbors[v];
+                delete vertices[neighbors[i]]._out_edges[v];
             }
             // delete the out neighbors reference to v
             neighbors = Object.keys(vertices[v]._out_neighbors);
             for (i = 0; i < neighbors.length; i++){
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._in_neighbors[v];
+                delete vertices[neighbors[i]]._in_edges[v];
             }
             delete vertices[v];
             return this;
@@ -78,7 +83,7 @@ giraph = (function(){
             if (!(v1 in vertices && v2 in vertices)){
                 return false; // gracefully exit
             }
-            return edges[vertices[v1]._out_neighbors[v2]];
+            return vertices[v1]._out_edges[v2];
         };
         // get the size of the graph (number of edges)
         this.size = function(){
@@ -137,13 +142,17 @@ giraph = (function(){
 
             edges[id] = e;
             // only add in this direction
-            vertices[v1]._out_neighbors[v2] = id;
-            vertices[v2]._out_neighbors[v1] = id;
-            vertices[v2]._in_neighbors[v1] = id;
-            vertices[v1]._in_neighbors[v2] = id;
+            vertices[v1]._out_neighbors[v2] = this.vertex(v2);
+            vertices[v2]._out_neighbors[v1] = this.vertex(v1);
+            vertices[v2]._in_neighbors[v1] = this.vertex(v2);
+            vertices[v1]._in_neighbors[v2] = this.vertex(v1);
+            vertices[v1]._out_edges[v2] = e;
+            vertices[v2]._out_edges[v1] = e;
+            vertices[v2]._in_edges[v1] = e;
+            vertices[v1]._in_edges[v2] = e;
             return this;
         };
-        // remove an edge
+        // remove an edge by id of vertex
         this.remove_edge = function(v1, v2){
             // if one of the vertices doesn't exist
             if (!(v1 in vertices && v2 in vertices)){
@@ -154,6 +163,10 @@ giraph = (function(){
             delete vertices[v2]._out_neighbors[v1];
             delete vertices[v1]._in_neighbors[v2];
             delete vertices[v2]._in_neighbors[v1];
+            delete vertices[v1]._out_edges[v2];
+            delete vertices[v2]._out_edges[v1];
+            delete vertices[v2]._in_edges[v1];
+            delete vertices[v1]._in_edges[v2];
             delete edges[id];
             return this;
         };
@@ -167,12 +180,14 @@ giraph = (function(){
             for (var i = 0; i < neighbors.length; i++){
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._out_neighbors[v];
+                delete vertices[neighbors[i]]._out_edges[v];
             }
             // delete the out neighbors reference to v
             neighbors = Object.keys(vertices[v]._out_neighbors);
             for (i = 0; i < neighbors.length; i++){
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._in_neighbors[v];
+                delete vertices[neighbors[i]]._in_edges[v];
             }
             delete vertices[v];
             return this;
@@ -189,7 +204,7 @@ giraph = (function(){
             if (!(v1 in vertices && v2 in vertices)){
                 return false; // gracefully exit
             }
-            return edges[vertices[v1]._out_neighbors[v2]];
+            return vertices[v1]._out_edges[v2];
         };
         // get the size of the graph (number of edges)
         this.size = function(){
@@ -244,16 +259,46 @@ giraph = (function(){
         else {
             extra = aextra;
         }
-        this._in_neighbors = {}; // key neighbor, value edge index
-        this._out_neighbors = {}; // key neighbor, value edge index
+        this._in_neighbors = {}; // key neighbor, value vertex object
+        this._out_neighbors = {}; // key neighbor, value vertex object
+        this._in_edges = {}; // key neighbor id, value edge object
+        this._out_edges = {}; // key neighbor id, value edge object
 
-        // returns the ids for all of the in_neighbors
+        // returns the objects for all of the in_neighbors
         this.in_neighbors = function(){
-            return Object.keys(this._in_neighbors);
+            var neighbors = Object.keys(this._in_neighbors);
+            var retval = [];
+            for (var i = 0; i < neighbors.length; i++){
+                retval.push(this._in_neighbors[neighbors[i]]);
+            }
+            return retval;
         };
-        // returns the ids for all of the out_neighbors
+        // returns the objects for all of the out_neighbors
         this.neighbors = function(){
-            return Object.keys(this._out_neighbors);
+            var neighbors = Object.keys(this._out_neighbors);
+            var retval = [];
+            for (var i = 0; i < neighbors.length; i++){
+                retval.push(this._out_neighbors[neighbors[i]]);
+            }
+            return retval;
+        };
+        // returns the in_edges of this vertex
+        this.in_edges = function(){
+            var neighbors = Object.keys(this._in_edges);
+            var retval = [];
+            for (var i = 0; i < neighbors.length; i++){
+                retval.push(neighbors[i]);
+            }
+            return retval;
+        };
+        // returns the out_edges of this vertex
+        this.edges = function(){
+            var neighbors = Object.keys(this._out_edges);
+            var retval = [];
+            for (var i = 0; i < neighbors.length; i++){
+                retval.push(neighbors[i]);
+            }
+            return retval;
         };
         // returns the id
         this.id = function(){
@@ -323,7 +368,7 @@ giraph = (function(){
         };
         // getter and setter of weight
         this.weight = function(aweight){
-            if (aweight === undefined) return weight;
+            if (aweight === undefined) {return weight;}
             weight = aweight;
             return this;
         };
@@ -334,6 +379,7 @@ giraph = (function(){
             return this;
         };
         // get the endpoints of this edge
+        // v1 and v2 are vertex objects
         this.endpoints = function(v1,v2){
             if (v1 === undefined || v2 === undefined) return endpoints;
             endpoints = [v1,v2];
@@ -407,8 +453,8 @@ giraph = (function(){
                 order.push(current);
                 // add unreached neighbors
                 for (var i = 0; i < neighbors.length; i++){
-                    if (!(neighbors[i] in reached || orderingStructure.exists(neighbors[i]))){
-                        orderingStructure.add(neighbors[i]);
+                    if (!(neighbors[i].id() in reached || orderingStructure.exists(neighbors[i].id()))){
+                        orderingStructure.add(neighbors[i].id());
                     }
                 }
             }

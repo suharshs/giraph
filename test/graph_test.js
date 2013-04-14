@@ -32,8 +32,9 @@ test("remove_vertex", function(){
     g.add_vertex(1, 1, 1);
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
-    g.remove_vertex(2, 2, 2);
-    ok(!g.edge(1,2), "edge was removed");
+    g.remove_vertex(2);
+
+    ok(!g.edge(2,1), "edge was removed");
     ok(!g.vertex(1).is_neighbor(2), "vertex updated");
 });
 
@@ -72,7 +73,7 @@ test("directed add_edge", function(){
     g.add_vertex(2, 2, 2);
     g.add_edge(1,2,3,4);
     ok(g.edge(1,2).weight() === 3, "edge was added");
-    ok(g.vertex(2).in_neighbors()[0] === "1", "edge was added");
+    ok(g.vertex(2).in_neighbors()[0].id() === 1, "edge was added");
     ok(g.vertex(2).neighbors().length === 0, "no out neighbors for 2");
     ok(g.vertex(1).is_neighbor(2) !== undefined, "vertex updated");
 });
