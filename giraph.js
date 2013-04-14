@@ -26,7 +26,7 @@ giraph = (function(){
             // create the new edge
             var id = edge_id;
             edge_id++;
-            var e = new edge(id, v1, v2, weight, extra);
+            var e = new edge(id, this.vertex(v1), this.vertex(v2), weight, extra);
             edges[id] = e;
             // only add in this direction
             vertices[v1]._out_neighbors[v2] = this.vertex(v2);
@@ -138,7 +138,7 @@ giraph = (function(){
             // create the new edge
             var id = edge_id;
             edge_id++;
-            var e = new edge(id, v1, v2, weight, extra);
+            var e = new edge(id, this.vertex(v1), this.vertex(v2), weight, extra);
 
             edges[id] = e;
             // only add in this direction
@@ -409,8 +409,8 @@ giraph = (function(){
             }
             for (i = 0; i < edges.length; i++){
                 var endpoints = edges[i].endpoints();
-                var start = endpoints[0];
-                var end = endpoints[1];
+                var start = endpoints[0].id();
+                var end = endpoints[1].id();
                 // if we can add this edge without creating a cycle
                 if (set[start] !== set[end]){
                     MST.push(edges[i]);
