@@ -54,6 +54,9 @@ function edge(){
 }
 
 function fd(vrts, edgs){
+    var edgelength = 300; // we will keep the minimum as 100
+    var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length makes fd speed reasonable and removes overcorrection
+    var k_h = k_c/Math.pow(edgelength,3);
 
     var atrchange = [];
 
@@ -64,11 +67,11 @@ function fd(vrts, edgs){
         var v2p = endpoints[1].position;
         var change1 = [0,0];
         var change2 = [0,0];
-        var d = (v2p[0]-v1p[0])*(v2p[0]-v1p[0])+(v2p[1]-v1p[1])*(v2p[1]-v1p[1]) + 10.0;
-            change1[0] = +(v2p[0]-v1p[0])*0.0000001*d;
-            change1[1] = +(v2p[1]-v1p[1])*0.0000001*d;
-            change2[0] = -(v2p[0]-v1p[0])*0.0000001*d;
-            change2[1] = -(v2p[1]-v1p[1])*0.0000001*d;
+        var d = Math.sqrt((v2p[0]-v1p[0])*(v2p[0]-v1p[0])+(v2p[1]-v1p[1])*(v2p[1]-v1p[1]) + 100.0);
+            change1[0] = +(v2p[0]-v1p[0])*k_h*d;
+            change1[1] = +(v2p[1]-v1p[1])*k_h*d;
+            change2[0] = -(v2p[0]-v1p[0])*k_h*d;
+            change2[1] = -(v2p[1]-v1p[1])*k_h*d;
         atrchange.push([change1,change2]);
     }
 
@@ -82,11 +85,11 @@ function fd(vrts, edgs){
             var v2pos = verts[j].position;
             var del1 = [0,0];
             var del2 = [0,0];
-            var dist = (v2pos[0]-v1pos[0])*(v2pos[0]-v1pos[0])+(v2pos[1]-v1pos[1])*(v2pos[1]-v1pos[1]) + 10.0;
-            del1[0] = -(v2pos[0]-v1pos[0])*1000000/dist/dist;
-            del1[1] = -(v2pos[1]-v1pos[1])*1000000/dist/dist;
-            del2[0] = +(v2pos[0]-v1pos[0])*1000000/dist/dist;
-            del2[1] = +(v2pos[1]-v1pos[1])*1000000/dist/dist;
+            var dist = Math.sqrt((v2pos[0]-v1pos[0])*(v2pos[0]-v1pos[0])+(v2pos[1]-v1pos[1])*(v2pos[1]-v1pos[1]) + 100.0);
+            del1[0] = -(v2pos[0]-v1pos[0])*k_c/dist/dist;
+            del1[1] = -(v2pos[1]-v1pos[1])*k_c/dist/dist;
+            del2[0] = +(v2pos[0]-v1pos[0])*k_c/dist/dist;
+            del2[1] = +(v2pos[1]-v1pos[1])*k_c/dist/dist;
             repchange.push(del1);
             repchange.push(del2);
         }
@@ -113,6 +116,16 @@ function fd(vrts, edgs){
             verts[j].position[1] += d2[1];
         }
     }
+
+    // adds a gravitational sink at the centroid of the screen
+    // for (var v=0; v < verts.length; v++){
+    //     var vpos =  verts[v].position;
+    //     var cdist = (650-vpos[0])*(650-vpos[0])+(250-vpos[1])*(250-vpos[1]) + 100.0;
+    //     vpos[0] += (650-vpos[0])*0.0000001*cdist - (650-vpos[0])*10000000/cdist/cdist;
+    //     vpos[1] += (250-vpos[1])*0.0000001*cdist - (250-vpos[1])*10000000/cdist/cdist;
+    // }
+
+    //Need to figure out how to scale the graph edge links based on screen size
 }
 
 
