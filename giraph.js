@@ -503,7 +503,7 @@ giraph = (function(){
     // the visualizations for a graph
     var viz = {
         // binds a graph to a visualization in a div and creates the visualization
-        bind: function(){
+        bind: function(id, graph){
 
         }
     };

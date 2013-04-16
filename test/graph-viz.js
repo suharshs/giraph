@@ -32,6 +32,13 @@ function vertex(){
         })
         .addTo(stage);
     };
+    this.redraw = function(){
+        var that = this;
+        this.viz.attr({
+            x: that.position[0],
+            y: that.position[1]
+        }).addTo(stage);
+    };
 }
 
 function edge(){
@@ -47,33 +54,64 @@ function edge(){
 }
 
 function fd(vrts, edgs){
+
+    var atrchange = [];
+
     //attractive edge force (need to use the edge information here)
     for(var id=0; id < edges.length; id++){
         var endpoints = edges[id].endpoints;
         var v1p = endpoints[0].position;
         var v2p = endpoints[1].position;
-        var d = (v2p[0]-v1p[0])*(v2p[0]-v1p[0])+(v2p[1]-v1p[1])*(v2p[1]-v1p[1]);
-            v1p[0] = v1p[0]+(v2p[0]-v1p[0])*550/d;
-            v1p[1] = v1p[1]+(v2p[1]-v1p[1])*550/d;
-            v2p[0] = v2p[0]-(v2p[0]-v1p[0])*550/d;
-            v2p[1] = v2p[1]-(v2p[1]-v1p[1])*550/d;
-        endpoints[0].position = v1p;
-        endpoints[1].position = v2p;
+        var change1 = [0,0];
+        var change2 = [0,0];
+        var d = (v2p[0]-v1p[0])*(v2p[0]-v1p[0])+(v2p[1]-v1p[1])*(v2p[1]-v1p[1]) + 10.0;
+            change1[0] = +(v2p[0]-v1p[0])*0.0000001*d;
+            change1[1] = +(v2p[1]-v1p[1])*0.0000001*d;
+            change2[0] = -(v2p[0]-v1p[0])*0.0000001*d;
+            change2[1] = -(v2p[1]-v1p[1])*0.0000001*d;
+        atrchange.push([change1,change2]);
     }
+
+    var repchange = [];
+    var j;
 
     // repulsive force here
     for (var i = 0; i < verts.length; i++){
         var v1pos = verts[i].position;
-        for (var j = i+1; j < verts.length; j++){
+        for (j = i+1; j < verts.length; j++){
             var v2pos = verts[j].position;
-            var dist = (v2pos[0]-v1pos[0])*(v2pos[0]-v1pos[0])+(v2pos[1]-v1pos[1])*(v2pos[1]-v1pos[1]);
-            v1pos[0] = v1pos[0]-(v2pos[0]-v1pos[0])*500/dist;
-            v1pos[1] = v1pos[1]-(v2pos[1]-v1pos[1])*500/dist;
-            v2pos[0] = v2pos[0]+(v2pos[0]-v1pos[0])*500/dist;
-            v2pos[1] = v2pos[1]+(v2pos[1]-v1pos[1])*500/dist;
-            verts[j].position = v2pos;
+            var del1 = [0,0];
+            var del2 = [0,0];
+            var dist = (v2pos[0]-v1pos[0])*(v2pos[0]-v1pos[0])+(v2pos[1]-v1pos[1])*(v2pos[1]-v1pos[1]) + 10.0;
+            del1[0] = -(v2pos[0]-v1pos[0])*1000000/dist/dist;
+            del1[1] = -(v2pos[1]-v1pos[1])*1000000/dist/dist;
+            del2[0] = +(v2pos[0]-v1pos[0])*1000000/dist/dist;
+            del2[1] = +(v2pos[1]-v1pos[1])*1000000/dist/dist;
+            repchange.push(del1);
+            repchange.push(del2);
         }
-        verts[i].position = v1pos;
+    }
+
+    // applying the atraction changes
+    for (id = 0; id < edges.length; id++){
+        var endpts = edges[id].endpoints;
+        endpts[0].position[0] += atrchange[id][0][0];
+        endpts[0].position[1] += atrchange[id][0][1];
+        endpts[1].position[0] += atrchange[id][1][0];
+        endpts[1].position[1] += atrchange[id][1][1];
+    }
+
+    // applying repulsive forces
+    for (i = 0; i < verts.length; i++){
+        var v1ps = verts[i].position;
+        for (j = i+1; j < verts.length; j++){
+            var d1 = repchange.shift();
+            var d2 = repchange.shift();
+            verts[i].position[0] += d1[0];
+            verts[i].position[1] += d1[1];
+            verts[j].position[0] += d2[0];
+            verts[j].position[1] += d2[1];
+        }
     }
 }
 
@@ -98,19 +136,25 @@ u.edges.push(f);
 x.edges.push(f);
 v.edges.push(e);
 u.edges.push(e);
+x.draw();
+    v.draw();
+    u.draw();
+    g.draw();
+    f.draw();
+    e.draw();
 
 var verts = [v,u,x];
 var edges = [g,f,e];
 
 setInterval(function(){
     fd(verts,edges);
-    x.draw();
-    v.draw();
-    u.draw();
-    g.draw();
-    f.draw();
-    e.draw();
-},10);
+    redrawEdge(g);
+    redrawEdge(f);
+    redrawEdge(e);
+    x.redraw();
+    v.redraw();
+    u.redraw();
+},50);
 
 
 
