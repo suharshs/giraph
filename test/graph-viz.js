@@ -55,7 +55,7 @@ function edge(){
 
 function fd(vrts, edgs){
     var edgelength = 300; // we will keep the minimum as 100
-    var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length makes fd speed reasonable and removes overcorrection
+    var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
     var k_h = k_c/Math.pow(edgelength,3);
 
     var atrchange = [];
@@ -117,15 +117,22 @@ function fd(vrts, edgs){
         }
     }
 
-    // adds a gravitational sink at the centroid of the screen
-    // for (var v=0; v < verts.length; v++){
-    //     var vpos =  verts[v].position;
-    //     var cdist = (650-vpos[0])*(650-vpos[0])+(250-vpos[1])*(250-vpos[1]) + 100.0;
-    //     vpos[0] += (650-vpos[0])*0.0000001*cdist - (650-vpos[0])*10000000/cdist/cdist;
-    //     vpos[1] += (250-vpos[1])*0.0000001*cdist - (250-vpos[1])*10000000/cdist/cdist;
-    // }
+    // compute centroid of vertices
+    var centroid = [0,0];
+    for (var v=0; v < verts.length; v++){
+        centroid[0] += verts[v].position[0];
+        centroid[1] += verts[v].position[1];
+    }
+    centroid[0] = centroid[0]/verts.length;
+    centroid[1] = centroid[1]/verts.length;
+    var xdiff = centroid[0] - 650;
+    var ydiff = centroid[1] - 250;
 
-    //Need to figure out how to scale the graph edge links based on screen size
+    // translate be centroid of vertices
+    for (v = 0; v < verts.length; v++){
+        verts[v].position[0] = verts[v].position[0] - xdiff;
+        verts[v].position[1] = verts[v].position[1] - ydiff;
+    }
 }
 
 
@@ -159,6 +166,9 @@ x.draw();
 var verts = [v,u,x];
 var edges = [g,f,e];
 
+
+// in final code this will only work in the beginning and when a user makes a change
+// to the graph. Force direction can be deactivated by the user. 
 setInterval(function(){
     fd(verts,edges);
     redrawEdge(g);

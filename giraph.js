@@ -332,7 +332,7 @@ giraph = (function(){
         };
         // getter and setter of position
         this.position = function(ax,ay){
-            if (ax === undefined || ay === undefined) return [x,y];
+            if (ax === undefined || ay === undefined) return {x:x,y:y};
             x = ax;
             y = ay;
             return this;
