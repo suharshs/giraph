@@ -504,16 +504,36 @@ giraph = (function(){
         this.draw = function(){
             var svert = this.endpoints()[0].position();
             var evert = this.endpoints()[1].position();
-            this.viselement = this.visualization.canvas.path(["M", svert.x,svert.y,"L", evert.x,evert.y].join(","));
+            var delx = evert.x-svert.x;
+            var dely = evert.y-svert.y;
+            var x = 25/Math.sqrt(1+(dely/delx)*(dely/delx));
+            var y = Math.sqrt(625 - x*x);
+            if (delx < 0){
+                x = -x;
+            }
+            if (dely < 0){
+                y = -y;
+            }
+            this.viselement = this.visualization.canvas.path(["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","));
         this.viselement.attr({stroke: this.color()});
         };
         // send the redraw message to the visualization
         this.redraw = function(){
             var svert = this.endpoints()[0].position();
             var evert = this.endpoints()[1].position();
+            var delx = evert.x-svert.x;
+            var dely = evert.y-svert.y;
+            var x = 25/Math.sqrt(1+(dely/delx)*(dely/delx));
+            var y = Math.sqrt(625 - x*x);
+            if (delx < 0){
+                x = -x;
+            }
+            if (dely < 0){
+                y = -y;
+            }
             if (this.viselement){
                 this.viselement.animate({
-                    path: ["M", svert.x,svert.y,"L", evert.x,evert.y].join(",")
+                    path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(",")
                 }, 10);
             }
             else{
@@ -641,7 +661,7 @@ giraph = (function(){
         var id = aid;
         var graph = agraph;
         graph.viz(this);
-        var edgelength = 300; // we will keep the minimum as 100
+        var edgelength = 150; // we will keep the minimum as 100
         var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
         var k_h = k_c/Math.pow(edgelength,3);
         var width = 500, height = 500;
@@ -723,10 +743,10 @@ giraph = (function(){
                     var del1 = [0,0];
                     var del2 = [0,0];
                     var dist = Math.sqrt((v2pos.x-v1pos.x)*(v2pos.x-v1pos.x)+(v2pos.y-v1pos.y)*(v2pos.y-v1pos.y) + 100.0);
-                    del1[0] = -(v2pos.x-v1pos.x)*k_c/dist/dist;
-                    del1[1] = -(v2pos.y-v1pos.y)*k_c/dist/dist;
-                    del2[0] = +(v2pos.x-v1pos.x)*k_c/dist/dist;
-                    del2[1] = +(v2pos.y-v1pos.y)*k_c/dist/dist;
+                    del1[0] = -(v2pos.x-v1pos.x)*k_c/dist/dist + (v2pos.x-v1pos.x)*k_h/3*dist;
+                    del1[1] = -(v2pos.y-v1pos.y)*k_c/dist/dist + (v2pos.y-v1pos.y)*k_h/3*dist;
+                    del2[0] = +(v2pos.x-v1pos.x)*k_c/dist/dist - (v2pos.x-v1pos.x)*k_h/3*dist;
+                    del2[1] = +(v2pos.y-v1pos.y)*k_c/dist/dist - (v2pos.y-v1pos.y)*k_h/3*dist;
                     repchange.push(del1);
                     repchange.push(del2);
                 }
