@@ -8,6 +8,7 @@ giraph = (function(){
         var edge_id = 0;
         var vertices = {}; // map of vertices indexed by id
         var edges = {}; // map of edges indexed by id
+        this.visualization = undefined;
 
         // methods
         // add a vertex
@@ -15,6 +16,7 @@ giraph = (function(){
             // create the new vertex
             var v = new vertex(id, weight, extra);
             vertices[id] = v;
+            v.visualization = this.visualization;
             return this;
         };
         // add an edge
@@ -27,6 +29,7 @@ giraph = (function(){
             var id = edge_id;
             edge_id++;
             var e = new edge(id, this.vertex(v1), this.vertex(v2), weight, extra);
+            e.visualization = this.visualization;
             edges[id] = e;
             // only add in this direction
             vertices[v1]._out_neighbors[v2] = this.vertex(v2);
@@ -113,6 +116,31 @@ giraph = (function(){
             if (sortfn) values.sort(sortfn);
             return values;
         };
+        // sets the visualization in all of this graph's components
+        this.viz = function(visual){
+            this.visualization = visual;
+            var verts = this.vertices();
+            var edges = this.edges();
+            for (var i = 0; i < verts.length; i++){
+                verts[i].visualization = this.visualization;
+            }
+            for (i = 0; i < edges.length; i++){
+                edges[i].visualization = this.visualization;
+            }
+        };
+        // displays the graph
+        this.draw = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edges = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].draw();
+                }
+                for (i = 0; i < edges.length; i++){
+                    edges[i].draw();
+                }
+            }
+        };
     };
 
     // private graph constructor
@@ -120,6 +148,7 @@ giraph = (function(){
         var edge_id = 0;
         var vertices = {}; // map of vertices indexed by id
         var edges = {}; // map of edges indexed by id
+        this.visualization = undefined;
 
         // methods
         // add a vertex
@@ -127,6 +156,7 @@ giraph = (function(){
             // create the new vertex
             var v = new vertex(id, weight, extra);
             vertices[id] = v;
+            v.visualization = this.visualization;
             return this;
         };
         // add an edge
@@ -139,7 +169,7 @@ giraph = (function(){
             var id = edge_id;
             edge_id++;
             var e = new edge(id, this.vertex(v1), this.vertex(v2), weight, extra);
-
+            e.visualization = this.visualization;
             edges[id] = e;
             // only add in this direction
             vertices[v1]._out_neighbors[v2] = this.vertex(v2);
@@ -234,12 +264,39 @@ giraph = (function(){
             if (sortfn) values.sort(sortfn);
             return values;
         };
+        // sets the visualization in all of this graph's components
+        this.viz = function(visual){
+            this.visualization = visual;
+            var verts = this.vertices();
+            var edges = this.edges();
+            for (var i = 0; i < verts.length; i++){
+                verts[i].visualization = this.visualization;
+            }
+            for (i = 0; i < edges.length; i++){
+                edges[i].visualization = this.visualization;
+            }
+        };
+        // displays the graph
+        this.draw = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edges = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].draw();
+                }
+                for (i = 0; i < edges.length; i++){
+                    edges[i].draw();
+                }
+            }
+        };
     };
 
     // private directed vertex constructor
     var vertex = function(aid, aweight, aextra){
         var id, weight, extra, color, x, y;
-        color = "rgba(50,50,50)";
+        this.visualization = undefined; // will store the visualization object
+        this.viselement = undefined;
+        color = "rgba(220,50,50)";
         // set this vertex's information
         if (aid === undefined){
             throw new Error("vertex object requires an id");
@@ -337,11 +394,34 @@ giraph = (function(){
             y = ay;
             return this;
         };
+        // send the draw message to the visualization
+        this.draw = function(){
+            if (this.visualization){
+                this.viselement = this.visualization.canvas.circle(x, y, 25);
+                this.viselement.attr("fill", color);
+            }
+        };
+        // send the redraw message to the visualization
+        this.redraw = function(){
+            if (this.visualization){
+                this.visualization.animate({
+                    cx: x,
+                    cy: y
+                }, 10);
+            }
+        };
+        // send the visualization clear message
+        this.visclear = function(){
+            /*TODO*/
+        };
     };
 
     // private edge constructor
     var edge = function(aid, av1, av2, aweight, aextra) {
         var id, endpoints, weight, extra, color;
+        color = 'rgb(50,250,50)';
+        this.visualization = undefined; // will store the visualization object
+        this.viselement = undefined;
         // set this vertex's information
         if (aid === undefined || av1 === undefined || av2 === undefined){
             throw new Error("edge object requires an id and two endpoint vertices");
@@ -390,6 +470,25 @@ giraph = (function(){
             if (col === undefined) return color;
             color = col;
             return this;
+        };
+        // send the draw message to the visualization
+        this.draw = function(){
+            var svert = this.endpoints()[0].position();
+            var evert = this.endpoints()[1].position();
+            this.viselement = this.visualization.canvas.path(["M", svert.x,svert.y,"L", evert.x,evert.y].join(","));
+        this.viselement.attr({stroke: this.color()});
+        };
+        // send the redraw message to the visualization
+        this.redraw = function(){
+            var svert = this.endpoints()[0].position();
+            var evert = this.endpoints()[1].position();
+            edge.viz.animate({
+                path: ["M", svert.x,svert.y,"L", evert.x,evert.y].join(",")
+            }, 10);
+        };
+        // send the visualization clear message
+        this.visclear = function(){
+            /*TODO*/
         };
     };
 
@@ -500,11 +599,31 @@ giraph = (function(){
         }
     };
 
+    // the visualization object
+    function visualization(aid, agraph, options){
+        if (aid === undefined || agraph === undefined){
+            console.log("must input a valid id and graph");
+            return;
+        }
+        var id = aid;
+        var graph = agraph;
+        graph.viz(this);
+        var width = 500, height = 500;
+        if (options && options.width){
+            width = option.width;
+        }
+        if (options && options.height){
+            height = options.height;
+        }
+
+        this.canvas = Raphael(id, width, height);
+    }
+
     // the visualizations for a graph
     var viz = {
         // binds a graph to a visualization in a div and creates the visualization
-        bind: function(id, graph){
-
+        bind: function(id, graph, options){
+            return new visualization(id,graph,options);
         }
     };
 

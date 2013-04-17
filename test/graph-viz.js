@@ -1,59 +1,74 @@
 function redrawEdge(edge){
-    edge.viz.clear().moveTo(edge.endpoints[0].position[0], edge.endpoints[0].position[1])
-        .lineTo(edge.endpoints[1].position[0],edge.endpoints[1].position[1]).addTo(stage);
+    // edge.viz.clear().moveTo(edge.endpoints[0].position[0], edge.endpoints[0].position[1])
+    //     .lineTo(edge.endpoints[1].position[0],edge.endpoints[1].position[1]).addTo(stage);
+    edge.viz.animate({
+        path: ["M", edge.endpoints[0].position[0], edge.endpoints[0].position[1],
+               "L", edge.endpoints[1].position[0], edge.endpoints[1].position[1]].join(",")
+    }, 10);
 }
 
 function vertex(){
     this.position = [Math.floor(Math.random()*500),Math.floor(Math.random()*500)];
     this.edges = [];
+    this.visualization = undefined;
     this.viz = undefined;
     this.draw = function(){
         var that = this;
-        this.viz = new Circle(this.position[0], this.position[1], 25)
-        .stroke('rgb(220,0,0)', 2)
-        .fill('rgba(220,0,0,0.3)')
-        .on("multi:drag", function(e){
-            this.animate( '300ms', {
-                fillColor: 'rgba(220,0,0,0.6)'
-            });
-            this.attr({
-                x: e.x,
-                y: e.y
-            });
-            that.position = [e.x,e.y];
-            for (var i = 0; i < that.edges.length; i++){
-                redrawEdge(that.edges[i]);
-            }
-        })
-        .on("multi:pointerup", function(e){
-            this.animate( '300ms', {
-                fillColor: 'rgba(220,0,0,0.3)'
-            });
-        })
-        .addTo(stage);
+        // this.viz = new Circle(this.position[0], this.position[1], 25)
+        // .stroke('rgb(220,0,0)', 2)
+        // .fill('rgba(220,0,0,0.3)')
+        // .on("multi:drag", function(e){
+        //     this.animate( '300ms', {
+        //         fillColor: 'rgba(220,0,0,0.6)'
+        //     });
+        //     this.attr({
+        //         x: e.x,
+        //         y: e.y
+        //     });
+        //     that.position = [e.x,e.y];
+        //     for (var i = 0; i < that.edges.length; i++){
+        //         redrawEdge(that.edges[i]);
+        //     }
+        // })
+        // .on("multi:pointerup", function(e){
+        //     this.animate( '300ms', {
+        //         fillColor: 'rgba(220,0,0,0.3)'
+        //     });
+        // })
+        // .addTo(stage);
+       this.viz = this.visualization.circle(this.position[0], this.position[1], 25);
+       this.viz.attr("fill", "rgb(220,0,0)");
     };
     this.redraw = function(){
         var that = this;
-        this.viz.attr({
-            x: that.position[0],
-            y: that.position[1]
-        }).addTo(stage);
+        // this.viz.attr({
+        //     x: that.position[0],
+        //     y: that.position[1]
+        // }).addTo(stage);
+        this.viz.animate({
+            cx: this.position[0],
+            cy: this.position[1]
+        }, 10);
     };
 }
 
 function edge(){
+    this.visualization = undefined;
     this.viz = undefined;
     this.endpoints = [];
     this.draw = function(){
-        this.viz = new Path()
-        .stroke('rgba(0,0,220,0.8)', 4)
-        .moveTo(this.endpoints[0].position[0],this.endpoints[0].position[1])
-        .lineTo(this.endpoints[1].position[0],this.endpoints[1].position[1])
-        .addTo(stage);
+        // this.viz = new Path()
+        // .stroke('rgba(0,0,220,0.8)', 4)
+        // .moveTo(this.endpoints[0].position[0],this.endpoints[0].position[1])
+        // .lineTo(this.endpoints[1].position[0],this.endpoints[1].position[1])
+        // .addTo(stage);
+        this.viz = this.visualization.path(["M", this.endpoints[0].position[0],this.endpoints[0].position[1],
+            "L", this.endpoints[1].position[1],this.endpoints[1].position[1]].join(","));
+        this.viz.attr({stroke: "rgb(0,220,0)"});
     };
 }
 
-function fd(vrts, edgs){
+function fd(verts, edges){
     var edgelength = 300; // we will keep the minimum as 100
     var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
     var k_h = k_c/Math.pow(edgelength,3);
@@ -128,7 +143,7 @@ function fd(vrts, edgs){
     var xdiff = centroid[0] - 650;
     var ydiff = centroid[1] - 250;
 
-    // translate be centroid of vertices
+    // translate be centroid of vertices (this should not)
     for (v = 0; v < verts.length; v++){
         verts[v].position[0] = verts[v].position[0] - xdiff;
         verts[v].position[1] = verts[v].position[1] - ydiff;
@@ -136,7 +151,7 @@ function fd(vrts, edgs){
 }
 
 
-
+var paper = Raphael('graph-pane', 1300,500);
 
 var v = new vertex();
 //v.position = [50,50];
@@ -156,12 +171,20 @@ u.edges.push(f);
 x.edges.push(f);
 v.edges.push(e);
 u.edges.push(e);
+x.visualization = paper;
+    v.visualization = paper;
+    u.visualization = paper;
+    g.visualization = paper;
+    f.visualization = paper;
+    e.visualization = paper;
+
 x.draw();
     v.draw();
     u.draw();
     g.draw();
     f.draw();
     e.draw();
+
 
 var verts = [v,u,x];
 var edges = [g,f,e];
