@@ -141,6 +141,19 @@ giraph = (function(){
                 }
             }
         };
+        // redraws the graph 
+        this.redraw = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edges = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].redraw();
+                }
+                for (i = 0; i < edges.length; i++){
+                    edges[i].redraw();
+                }
+            }
+        };
     };
 
     // private graph constructor
@@ -289,6 +302,19 @@ giraph = (function(){
                 }
             }
         };
+        // redraws the graph 
+        this.redraw = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edges = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].redraw();
+                }
+                for (i = 0; i < edges.length; i++){
+                    edges[i].redraw();
+                }
+            }
+        };
     };
 
     // private directed vertex constructor
@@ -403,11 +429,14 @@ giraph = (function(){
         };
         // send the redraw message to the visualization
         this.redraw = function(){
-            if (this.visualization){
-                this.visualization.animate({
+            if (this.viselement){
+                this.viselement.animate({
                     cx: x,
                     cy: y
                 }, 10);
+            }
+            else{
+                this.draw();
             }
         };
         // send the visualization clear message
@@ -482,9 +511,14 @@ giraph = (function(){
         this.redraw = function(){
             var svert = this.endpoints()[0].position();
             var evert = this.endpoints()[1].position();
-            edge.viz.animate({
-                path: ["M", svert.x,svert.y,"L", evert.x,evert.y].join(",")
-            }, 10);
+            if (this.viselement){
+                this.viselement.animate({
+                    path: ["M", svert.x,svert.y,"L", evert.x,evert.y].join(",")
+                }, 10);
+            }
+            else{
+                this.draw();
+            }
         };
         // send the visualization clear message
         this.visclear = function(){
@@ -600,23 +634,125 @@ giraph = (function(){
     };
 
     // the visualization object
-    function visualization(aid, agraph, options){
+    function visualization(aid, agraph, options) {
         if (aid === undefined || agraph === undefined){
-            console.log("must input a valid id and graph");
-            return;
+            throw new Error("must input a valid id and graph");
         }
         var id = aid;
         var graph = agraph;
         graph.viz(this);
+        var edgelength = 300; // we will keep the minimum as 100
+        var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
+        var k_h = k_c/Math.pow(edgelength,3);
         var width = 500, height = 500;
         if (options && options.width){
-            width = option.width;
+            width = options.width;
         }
         if (options && options.height){
             height = options.height;
         }
 
         this.canvas = Raphael(id, width, height);
+        // computes and redraws the graph with force direction for 100 iteration
+        this.force_direction = function(){
+            setInterval(function(){
+                shift_centroid();
+                fd_iter();
+                graph.redraw();
+            }, 50);
+        };
+        // one iteration of force_direction
+        var fd_iter = function(){
+            var edges = graph.edges();
+            var verts = graph.vertices();
+            // retrieve the force calculations
+            var atrchange = atr_forces();
+            var repchange = rep_forces();
+            var v1,v2;
+            // applying the atraction changes
+            for (var id = 0; id < edges.length; id++){
+                var endpts = edges[id].endpoints();
+                v1 = endpts[0];
+                v2 = endpts[1];
+                v1.position(v1.position().x + atrchange[id][0][0], v1.position().y + atrchange[id][0][1]);
+                v2.position(v2.position().x + atrchange[id][1][0], v2.position().y + atrchange[id][1][1]);
+            }
+
+            // applying repulsive forces
+            for (var i = 0; i < verts.length; i++){
+                v1 = verts[i];
+                for (var j = i+1; j < verts.length; j++){
+                    v2 = verts[j];
+                    var d1 = repchange.shift();
+                    var d2 = repchange.shift();
+                    v1.position(v1.position().x + d1[0], v1.position().y + d1[1]);
+                    v2.position(v2.position().x + d2[0], v2.position().y + d2[1]);
+                }
+            }
+        };
+        // compute the attractive forces
+        var atr_forces = function(){
+            var edges = graph.edges();
+            var atrchange = [];
+
+            //attractive edge force (need to use the edge information here)
+            for(var id=0; id < edges.length; id++){
+                var endpoints = edges[id].endpoints();
+                var v1p = endpoints[0].position();
+                var v2p = endpoints[1].position();
+                var change1 = [0,0];
+                var change2 = [0,0];
+                var d = Math.sqrt((v2p.x-v1p.x)*(v2p.x-v1p.x)+(v2p.y-v1p.y)*(v2p.y-v1p.y) + 100.0);
+                change1[0] = +(v2p.x-v1p.x)*k_h*d;
+                change1[1] = +(v2p.y-v1p.y)*k_h*d;
+                change2[0] = -(v2p.x-v1p.x)*k_h*d;
+                change2[1] = -(v2p.y-v1p.y)*k_h*d;
+                atrchange.push([change1,change2]);
+            }
+            return atrchange;
+        };
+        // compute the repulsive forces
+        var rep_forces = function(){
+            var verts = graph.vertices();
+            var repchange = [];
+            // repulsive force here
+            for (var i = 0; i < verts.length; i++){
+                var v1pos = verts[i].position();
+                for (j = i+1; j < verts.length; j++){
+                    var v2pos = verts[j].position();
+                    var del1 = [0,0];
+                    var del2 = [0,0];
+                    var dist = Math.sqrt((v2pos.x-v1pos.x)*(v2pos.x-v1pos.x)+(v2pos.y-v1pos.y)*(v2pos.y-v1pos.y) + 100.0);
+                    del1[0] = -(v2pos.x-v1pos.x)*k_c/dist/dist;
+                    del1[1] = -(v2pos.y-v1pos.y)*k_c/dist/dist;
+                    del2[0] = +(v2pos.x-v1pos.x)*k_c/dist/dist;
+                    del2[1] = +(v2pos.y-v1pos.y)*k_c/dist/dist;
+                    repchange.push(del1);
+                    repchange.push(del2);
+                }
+            }
+            return repchange;
+        };
+        // shift the centroid of the graph to the centroid of the canvas
+        var shift_centroid = function(){
+            var verts = graph.vertices();
+            var repchange = [];
+            // compute centroid of vertices
+            var centroid = [0,0];
+            for (var v=0; v < verts.length; v++){
+                centroid[0] += verts[v].position().x;
+                centroid[1] += verts[v].position().y;
+            }
+            centroid[0] = centroid[0]/verts.length;
+            centroid[1] = centroid[1]/verts.length;
+            var xdiff = centroid[0] - width/2;
+            var ydiff = centroid[1] - height/2;
+
+            // translate be centroid of vertices (this should not)
+            for (v = 0; v < verts.length; v++){
+                verts[v].position(verts[v].position().x - xdiff, verts[v].position().y - ydiff);
+            }
+        };
     }
 
     // the visualizations for a graph

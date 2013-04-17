@@ -21,10 +21,21 @@
         g.vertex(2).position(300,50);
         g.vertex(1).position(50,50);
         g.add_edge(1,2);
-        var vis = giraph.viz.bind('graph-pane',g);
+        var vis = giraph.viz.bind('graph-pane',g, {
+            width: 1300,
+            height: 500
+        });
         setTimeout(function(){
             g.draw();
+            vis.force_direction();
         }, 1000);
+        setTimeout(function(){
+            g.add_vertex(3);
+            g.vertex(3).position(900,50);
+            g.add_edge(1,3);
+            g.add_edge(3,2);
+        }, 5000)
+
         
     </script>
 </body>
