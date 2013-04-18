@@ -1,6 +1,4 @@
 function redrawEdge(edge){
-    // edge.viz.clear().moveTo(edge.endpoints[0].position[0], edge.endpoints[0].position[1])
-    //     .lineTo(edge.endpoints[1].position[0],edge.endpoints[1].position[1]).addTo(stage);
     edge.viz.animate({
         path: ["M", edge.endpoints[0].position[0], edge.endpoints[0].position[1],
                "L", edge.endpoints[1].position[0], edge.endpoints[1].position[1]].join(",")
@@ -14,37 +12,11 @@ function vertex(){
     this.viz = undefined;
     this.draw = function(){
         var that = this;
-        // this.viz = new Circle(this.position[0], this.position[1], 25)
-        // .stroke('rgb(220,0,0)', 2)
-        // .fill('rgba(220,0,0,0.3)')
-        // .on("multi:drag", function(e){
-        //     this.animate( '300ms', {
-        //         fillColor: 'rgba(220,0,0,0.6)'
-        //     });
-        //     this.attr({
-        //         x: e.x,
-        //         y: e.y
-        //     });
-        //     that.position = [e.x,e.y];
-        //     for (var i = 0; i < that.edges.length; i++){
-        //         redrawEdge(that.edges[i]);
-        //     }
-        // })
-        // .on("multi:pointerup", function(e){
-        //     this.animate( '300ms', {
-        //         fillColor: 'rgba(220,0,0,0.3)'
-        //     });
-        // })
-        // .addTo(stage);
        this.viz = this.visualization.circle(this.position[0], this.position[1], 25);
        this.viz.attr("fill", "rgb(220,0,0)");
     };
     this.redraw = function(){
         var that = this;
-        // this.viz.attr({
-        //     x: that.position[0],
-        //     y: that.position[1]
-        // }).addTo(stage);
         this.viz.animate({
             cx: this.position[0],
             cy: this.position[1]
@@ -57,11 +29,6 @@ function edge(){
     this.viz = undefined;
     this.endpoints = [];
     this.draw = function(){
-        // this.viz = new Path()
-        // .stroke('rgba(0,0,220,0.8)', 4)
-        // .moveTo(this.endpoints[0].position[0],this.endpoints[0].position[1])
-        // .lineTo(this.endpoints[1].position[0],this.endpoints[1].position[1])
-        // .addTo(stage);
         this.viz = this.visualization.path(["M", this.endpoints[0].position[0],this.endpoints[0].position[1],
             "L", this.endpoints[1].position[1],this.endpoints[1].position[1]].join(","));
         this.viz.attr({stroke: "rgb(0,220,0)"});

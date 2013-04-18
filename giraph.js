@@ -44,6 +44,7 @@ giraph = (function(){
             if (!(v1 in vertices && v2 in vertices)){
                 return false; // gracefully exit without removing edge
             }
+            this.edge(v1,v2).visclear();
             var id = vertices[v1]._out_neighbors[v2];
             delete vertices[v1]._out_neighbors[v2];
             delete vertices[v2]._in_neighbors[v1];
@@ -57,9 +58,11 @@ giraph = (function(){
             if (!(v in vertices)){
                 return false; // gracefully exit
             }
+            this.vertex(v).visclear();
             // delete the in neighbors reference to v
             var neighbors = Object.keys(vertices[v]._in_neighbors);
             for (var i = 0; i < neighbors.length; i++){
+                edges[neighbors[i]].visclear();
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._out_neighbors[v];
                 delete vertices[neighbors[i]]._out_edges[v];
@@ -67,6 +70,7 @@ giraph = (function(){
             // delete the out neighbors reference to v
             neighbors = Object.keys(vertices[v]._out_neighbors);
             for (i = 0; i < neighbors.length; i++){
+                edges[neighbors[i]].visclear();
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._in_neighbors[v];
                 delete vertices[neighbors[i]]._in_edges[v];
@@ -138,19 +142,6 @@ giraph = (function(){
                 }
                 for (i = 0; i < edges.length; i++){
                     edges[i].draw();
-                }
-            }
-        };
-        // redraws the graph 
-        this.redraw = function(){
-            if (this.visualization){
-                var verts = this.vertices();
-                var edges = this.edges();
-                for (var i = 0; i < verts.length; i++){
-                    verts[i].redraw();
-                }
-                for (i = 0; i < edges.length; i++){
-                    edges[i].redraw();
                 }
             }
         };
@@ -201,6 +192,7 @@ giraph = (function(){
             if (!(v1 in vertices && v2 in vertices)){
                 return false; // gracefully exit without removing edge
             }
+            this.edge(v1,v2).visclear();
             var id = vertices[v1]._out_neighbors[v2];
             delete vertices[v1]._out_neighbors[v2];
             delete vertices[v2]._out_neighbors[v1];
@@ -218,9 +210,11 @@ giraph = (function(){
             if (!(v in vertices)){
                 return false; // gracefully exit
             }
+            this.vertex(v).visclear();
             // delete the in neighbors reference to v
             var neighbors = Object.keys(vertices[v]._in_neighbors);
             for (var i = 0; i < neighbors.length; i++){
+                edges[neighbors[i]].visclear();
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._out_neighbors[v];
                 delete vertices[neighbors[i]]._out_edges[v];
@@ -228,6 +222,7 @@ giraph = (function(){
             // delete the out neighbors reference to v
             neighbors = Object.keys(vertices[v]._out_neighbors);
             for (i = 0; i < neighbors.length; i++){
+                edges[neighbors[i]].visclear();
                 delete edges[neighbors[i]];
                 delete vertices[neighbors[i]]._in_neighbors[v];
                 delete vertices[neighbors[i]]._in_edges[v];
@@ -302,24 +297,11 @@ giraph = (function(){
                 }
             }
         };
-        // redraws the graph 
-        this.redraw = function(){
-            if (this.visualization){
-                var verts = this.vertices();
-                var edges = this.edges();
-                for (var i = 0; i < verts.length; i++){
-                    verts[i].redraw();
-                }
-                for (i = 0; i < edges.length; i++){
-                    edges[i].redraw();
-                }
-            }
-        };
     };
 
     // private directed vertex constructor
     var vertex = function(aid, aweight, aextra){
-        var id, weight, extra, color, x, y;
+        var id, weight, extra, color, x=0, y=0;
         this.visualization = undefined; // will store the visualization object
         this.viselement = undefined;
         color = "rgba(220,50,50)";
@@ -370,7 +352,7 @@ giraph = (function(){
             var neighbors = Object.keys(this._in_edges);
             var retval = [];
             for (var i = 0; i < neighbors.length; i++){
-                retval.push(neighbors[i]);
+                retval.push(this._in_edges[neighbors[i]]);
             }
             return retval;
         };
@@ -379,7 +361,7 @@ giraph = (function(){
             var neighbors = Object.keys(this._out_edges);
             var retval = [];
             for (var i = 0; i < neighbors.length; i++){
-                retval.push(neighbors[i]);
+                retval.push(this._out_edges[neighbors[i]]);
             }
             return retval;
         };
@@ -411,37 +393,50 @@ giraph = (function(){
         this.color = function(col){
             if (col === undefined) return color;
             color = col;
+            this.draw(); // update the visualization
             return this;
         };
         // getter and setter of position
-        this.position = function(ax,ay){
+        // update is a boolean of whether we should update the visualization immediately
+        this.position = function(ax,ay,update){
             if (ax === undefined || ay === undefined) return {x:x,y:y};
             x = ax;
             y = ay;
+            if (update === undefined){
+                update = true;
+            }
+            if (update){
+                this.draw(); // update the visualization
+                var edges = this.edges().concat(this.in_edges());
+                // update all of the edges that need to be redrawn
+                for (var i = 0; i < edges.length; i++){
+                    edges[i].draw();
+                }
+            }
             return this;
         };
         // send the draw message to the visualization
         this.draw = function(){
-            if (this.visualization){
-                this.viselement = this.visualization.canvas.circle(x, y, 25);
-                this.viselement.attr("fill", color);
-            }
-        };
-        // send the redraw message to the visualization
-        this.redraw = function(){
             if (this.viselement){
                 this.viselement.animate({
                     cx: x,
-                    cy: y
-                }, 10);
+                    cy: y,
+                    fill: color
+                },100);
             }
             else{
-                this.draw();
+                if (this.visualization){
+                    this.viselement = this.visualization.canvas.circle(x, y, 25);
+                    this.viselement.attr("fill", color);
+                }
             }
         };
         // send the visualization clear message
         this.visclear = function(){
-            /*TODO*/
+            if (this.viselement){
+                this.viselement.remove();
+                this.viselement = undefined;
+            }
         };
     };
 
@@ -489,15 +484,14 @@ giraph = (function(){
         };
         // get the endpoints of this edge
         // v1 and v2 are vertex objects
-        this.endpoints = function(v1,v2){
-            if (v1 === undefined || v2 === undefined) return endpoints;
-            endpoints = [v1,v2];
-            return this;
+        this.endpoints = function(){
+            return endpoints;
         };
         // getter and setter of color
         this.color = function(col){
             if (col === undefined) return color;
             color = col;
+            this.draw();
             return this;
         };
         // send the draw message to the visualization
@@ -514,35 +508,25 @@ giraph = (function(){
             if (dely < 0){
                 y = -y;
             }
-            this.viselement = this.visualization.canvas.path(["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","));
-        this.viselement.attr({stroke: this.color()});
-        };
-        // send the redraw message to the visualization
-        this.redraw = function(){
-            var svert = this.endpoints()[0].position();
-            var evert = this.endpoints()[1].position();
-            var delx = evert.x-svert.x;
-            var dely = evert.y-svert.y;
-            var x = 25/Math.sqrt(1+(dely/delx)*(dely/delx));
-            var y = Math.sqrt(625 - x*x);
-            if (delx < 0){
-                x = -x;
-            }
-            if (dely < 0){
-                y = -y;
-            }
             if (this.viselement){
                 this.viselement.animate({
-                    path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(",")
-                }, 10);
+                    path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","),
+                    stroke: this.color()
+                },100);
             }
-            else{
-                this.draw();
+            else {
+                if (this.visualization){
+                    this.viselement = this.visualization.canvas.path(["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","));
+                    this.viselement.attr({stroke: this.color()});
+                }
             }
         };
         // send the visualization clear message
         this.visclear = function(){
-            /*TODO*/
+            if (this.viselement){
+                this.viselement.remove();
+                this.viselement = undefined;
+            }
         };
     };
 
@@ -661,7 +645,8 @@ giraph = (function(){
         var id = aid;
         var graph = agraph;
         graph.viz(this);
-        var edgelength = 150; // we will keep the minimum as 100
+        /* TODO: must be a way to tie edge length to number of verts and width and height */
+        var edgelength = 300; // we will keep the minimum as 100
         var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
         var k_h = k_c/Math.pow(edgelength,3);
         var width = 500, height = 500;
@@ -675,10 +660,12 @@ giraph = (function(){
         this.canvas = Raphael(id, width, height);
         // computes and redraws the graph with force direction for 100 iteration
         this.force_direction = function(){
+            /* TODO: Make this not run all of the time and tie this to a user defined boolean */
+            // There must also be a better way to update the fd other than set interval
+            setInterval(function(){graph.draw();}, 100);
             setInterval(function(){
                 shift_centroid();
                 fd_iter();
-                graph.redraw();
             }, 50);
         };
         // one iteration of force_direction
@@ -688,14 +675,16 @@ giraph = (function(){
             // retrieve the force calculations
             var atrchange = atr_forces();
             var repchange = rep_forces();
-            var v1,v2;
+            var v1,v2,v1p,v2p;
             // applying the atraction changes
             for (var id = 0; id < edges.length; id++){
                 var endpts = edges[id].endpoints();
                 v1 = endpts[0];
                 v2 = endpts[1];
-                v1.position(v1.position().x + atrchange[id][0][0], v1.position().y + atrchange[id][0][1]);
-                v2.position(v2.position().x + atrchange[id][1][0], v2.position().y + atrchange[id][1][1]);
+                v1p = v1.position();
+                v2p = v2.position();
+                v1.position(v1p.x + atrchange[id][0][0], v1p.y + atrchange[id][0][1],false);
+                v2.position(v2p.x + atrchange[id][1][0], v2p.y + atrchange[id][1][1],false);
             }
 
             // applying repulsive forces
@@ -705,8 +694,10 @@ giraph = (function(){
                     v2 = verts[j];
                     var d1 = repchange.shift();
                     var d2 = repchange.shift();
-                    v1.position(v1.position().x + d1[0], v1.position().y + d1[1]);
-                    v2.position(v2.position().x + d2[0], v2.position().y + d2[1]);
+                    v1p = v1.position();
+                    v2p = v2.position();
+                    v1.position(v1p.x + d1[0], v1p.y + d1[1],false);
+                    v2.position(v2p.x + d2[0], v2p.y + d2[1],false);
                 }
             }
         };
@@ -714,19 +705,22 @@ giraph = (function(){
         var atr_forces = function(){
             var edges = graph.edges();
             var atrchange = [];
+            var delx,dely,v1p,v2p,d,change1,change2;
 
             //attractive edge force (need to use the edge information here)
             for(var id=0; id < edges.length; id++){
                 var endpoints = edges[id].endpoints();
-                var v1p = endpoints[0].position();
-                var v2p = endpoints[1].position();
-                var change1 = [0,0];
-                var change2 = [0,0];
-                var d = Math.sqrt((v2p.x-v1p.x)*(v2p.x-v1p.x)+(v2p.y-v1p.y)*(v2p.y-v1p.y) + 100.0);
-                change1[0] = +(v2p.x-v1p.x)*k_h*d;
-                change1[1] = +(v2p.y-v1p.y)*k_h*d;
-                change2[0] = -(v2p.x-v1p.x)*k_h*d;
-                change2[1] = -(v2p.y-v1p.y)*k_h*d;
+                v1p = endpoints[0].position();
+                v2p = endpoints[1].position();
+                change1 = [0,0];
+                change2 = [0,0];
+                delx = (v2p.x-v1p.x);
+                dely = (v2p.y-v1p.y);
+                d = Math.sqrt(delx*delx+dely*dely + 100.0);
+                change1[0] = delx*k_h*d;
+                change1[1] = dely*k_h*d;
+                change2[0] = -delx*k_h*d;
+                change2[1] = -dely*k_h*d;
                 atrchange.push([change1,change2]);
             }
             return atrchange;
@@ -737,18 +731,20 @@ giraph = (function(){
             var repchange = [];
             // repulsive force here
             for (var i = 0; i < verts.length; i++){
-                var v1pos = verts[i].position();
+                v1p = verts[i].position();
                 for (j = i+1; j < verts.length; j++){
-                    var v2pos = verts[j].position();
-                    var del1 = [0,0];
-                    var del2 = [0,0];
-                    var dist = Math.sqrt((v2pos.x-v1pos.x)*(v2pos.x-v1pos.x)+(v2pos.y-v1pos.y)*(v2pos.y-v1pos.y) + 100.0);
-                    del1[0] = -(v2pos.x-v1pos.x)*k_c/dist/dist + (v2pos.x-v1pos.x)*k_h/3*dist;
-                    del1[1] = -(v2pos.y-v1pos.y)*k_c/dist/dist + (v2pos.y-v1pos.y)*k_h/3*dist;
-                    del2[0] = +(v2pos.x-v1pos.x)*k_c/dist/dist - (v2pos.x-v1pos.x)*k_h/3*dist;
-                    del2[1] = +(v2pos.y-v1pos.y)*k_c/dist/dist - (v2pos.y-v1pos.y)*k_h/3*dist;
-                    repchange.push(del1);
-                    repchange.push(del2);
+                    v2p = verts[j].position();
+                    change1 = [0,0];
+                    change2 = [0,0];
+                    delx = (v2p.x-v1p.x);
+                    dely = (v2p.y-v1p.y);
+                    var dist = Math.sqrt(delx*delx+dely*dely + 100.0);
+                    change1[0] = -delx*k_c/dist/dist + delx*k_h/3*dist;
+                    change1[1] = -dely*k_c/dist/dist + dely*k_h/3*dist;
+                    change2[0] = delx*k_c/dist/dist - delx*k_h/3*dist;
+                    change2[1] = dely*k_c/dist/dist - dely*k_h/3*dist;
+                    repchange.push(change1);
+                    repchange.push(change2);
                 }
             }
             return repchange;
@@ -756,12 +752,13 @@ giraph = (function(){
         // shift the centroid of the graph to the centroid of the canvas
         var shift_centroid = function(){
             var verts = graph.vertices();
-            var repchange = [];
+            var repchange = [],vp;
             // compute centroid of vertices
             var centroid = [0,0];
             for (var v=0; v < verts.length; v++){
-                centroid[0] += verts[v].position().x;
-                centroid[1] += verts[v].position().y;
+                vp = verts[v].position();
+                centroid[0] += vp.x;
+                centroid[1] += vp.y;
             }
             centroid[0] = centroid[0]/verts.length;
             centroid[1] = centroid[1]/verts.length;
@@ -770,7 +767,8 @@ giraph = (function(){
 
             // translate be centroid of vertices (this should not)
             for (v = 0; v < verts.length; v++){
-                verts[v].position(verts[v].position().x - xdiff, verts[v].position().y - ydiff);
+                vp = verts[v].position();
+                verts[v].position(vp.x - xdiff, vp.y - ydiff,false);
             }
         };
     }
