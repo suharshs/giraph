@@ -8,7 +8,7 @@ giraph allows you quickly create a new directed or undirected graph, perform pro
 * Interactive graph viewer
 
 ## Dependencies
-* [BonsaiJS](http://bonsaijs.org/) - A nice SVG manipulation javascript library used for visualizing the graphs.
+* [Raphael](http://raphaeljs.org/) - A nice SVG manipulation javascript library used for visualizing the graphs.
 
 ## How to start
 It's really simple to start building you own graphs.
