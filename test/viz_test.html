@@ -1,3 +1,15 @@
+<!--
+    Manual test plan for graph visualizations and force direction
+    Here is what should happen at each second:
+    1 : A graph of two vertices should be connected by an edge and centered on the screen.
+    3 : A triangle should form and an isolated vertex should appear.
+    5 : A vertex should be added to form a complete 4 vertex graph
+    7 : A vertex should be added to form a complete 5 vertex graph
+    9 : A vertex should be added to form a complete 6 vertex graph
+    11 : The isolated vertex should be removed and the graph should adjust accordingly.
+    13: An edge should be removed and the graph should adjust accordingly.
+
+-->
 <!DOCTYPE html>  
 <html>  
 <head>  
@@ -39,14 +51,15 @@
         }, 3000);
         setTimeout(function(){
             g.add_vertex(4);
-            g.vertex(4).position(50,50).color('rgb(255,147,28)');
+            g.vertex(4).position(500,50).color('rgb(255,147,28)');
             g.add_edge(1,4);
+            g.edge(1,4).color('rgb(255,100,30)');
             g.add_edge(2,4);
             g.add_edge(3,4);
         }, 5000);
         setTimeout(function(){
             g.add_vertex(5);
-            g.vertex(5).position(50,50).color('rgb(238,243,12)');
+            g.vertex(5).position(50,500).color('rgb(238,243,12)');
             g.add_edge(1,5);
             g.add_edge(2,5);
             g.add_edge(3,5);
@@ -54,7 +67,7 @@
         }, 7000);
         setTimeout(function(){
             g.add_vertex(6);
-            g.vertex(6).position(50,50).color('rgb(129,0,123)');
+            g.vertex(6).position(1000,500).color('rgb(129,0,123)');
             g.add_edge(1,6);
             g.add_edge(2,6);
             g.add_edge(3,6);
@@ -63,7 +76,10 @@
         }, 9000);
         setTimeout(function(){
             g.remove_vertex(100);
-        }, 10000);
+        }, 11000);
+        setTimeout(function(){
+            g.remove_edge(1,2);
+        }, 13000);
 
         
     </script>

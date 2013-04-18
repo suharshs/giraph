@@ -45,7 +45,7 @@ giraph = (function(){
                 return false; // gracefully exit without removing edge
             }
             this.edge(v1,v2).visclear();
-            var id = vertices[v1]._out_neighbors[v2];
+            var id = vertices[v1]._out_edges[v2].id();
             delete vertices[v1]._out_neighbors[v2];
             delete vertices[v2]._in_neighbors[v1];
             delete vertices[v1]._out_edges[v2];
@@ -193,7 +193,7 @@ giraph = (function(){
                 return false; // gracefully exit without removing edge
             }
             this.edge(v1,v2).visclear();
-            var id = vertices[v1]._out_neighbors[v2];
+            var id = vertices[v1]._out_edges[v2].id();
             delete vertices[v1]._out_neighbors[v2];
             delete vertices[v2]._out_neighbors[v1];
             delete vertices[v1]._in_neighbors[v2];
@@ -428,6 +428,15 @@ giraph = (function(){
                 if (this.visualization){
                     this.viselement = this.visualization.canvas.circle(x, y, 25);
                     this.viselement.attr("fill", color);
+                    // add the drag event for this element
+                    var that = this;
+                    /* TODO: add vertex draggability option below
+                    this.viselement.drag(function(dx,dy,x,y,e){
+                        that.position(x,y,false);
+                        this.attr({
+                            cx: x,
+                            cy: y}); 
+                    },function(){},function(){});*/
                 }
             }
         };
@@ -646,7 +655,7 @@ giraph = (function(){
         var graph = agraph;
         graph.viz(this);
         /* TODO: must be a way to tie edge length to number of verts and width and height */
-        var edgelength = 300; // we will keep the minimum as 100
+        var edgelength = 300;
         var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
         var k_h = k_c/Math.pow(edgelength,3);
         var width = 500, height = 500;
@@ -663,10 +672,10 @@ giraph = (function(){
             /* TODO: Make this not run all of the time and tie this to a user defined boolean */
             // There must also be a better way to update the fd other than set interval
             setInterval(function(){graph.draw();}, 100);
-            setInterval(function(){
+            var id = setInterval(function(){
                 shift_centroid();
                 fd_iter();
-            }, 50);
+            }, 15);
         };
         // one iteration of force_direction
         var fd_iter = function(){
@@ -799,4 +808,3 @@ giraph = (function(){
     };
 
 })();
-
