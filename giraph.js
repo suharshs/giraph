@@ -24,7 +24,7 @@ giraph = (function(){
         // add an edge
         this.add_edge = function(v1, v2, weight, extra){
             // if one of the vertices doesn't exist
-            if (!(v1 in vertices && v2 in vertices)){
+            if (!(v1 in vertices && v2 in vertices) || v2 in vertices[v1]._out_neighbors){
                 return; // gracefully exit without adding edge
             }
             // create the new edge
@@ -181,7 +181,7 @@ giraph = (function(){
         // add an edge
         this.add_edge = function(v1, v2, weight, extra){
             // if one of the vertices doesn't exist
-            if (!(v1 in vertices && v2 in vertices)){
+            if (!(v1 in vertices && v2 in vertices) || v2 in vertices[v1]._out_neighbors){
                 return; // gracefully exit without adding edge
             }
             // create the new edge
