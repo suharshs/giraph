@@ -479,22 +479,13 @@ giraph = (function(){
                 if (this.visualization){
                     this.viselement = this.visualization.canvas.circle(x, y, 25);
                     this.viselement.attr("fill", color);
-                    this.viselement.attr("title", String(weight));
+                    this.viselement.attr("title", String(id));
                     this.label = this.visualization.canvas.text(x,y-10, String(this.id()));
                     this.label.attr("fill", "black");
                     this.label.attr("font-size", 20);
                     this.weightlabel = this.visualization.canvas.text(x,y+10, String(this.weight()));
                     this.weightlabel.attr("fill", "black");
                     this.weightlabel.attr("font-size", 15);
-                    // add the drag event for this element
-                    var that = this;
-                    /* TODO: add vertex draggability option below
-                    this.viselement.drag(function(dx,dy,x,y,e){
-                        that.position(x,y,false);
-                        this.attr({
-                            cx: x,
-                            cy: y}); 
-                    },function(){},function(){});*/
                 }
             }
         };
@@ -847,7 +838,9 @@ giraph = (function(){
                 change1 = [0,0];
                 change2 = [0,0];
                 delx = (v2p.x-v1p.x);
+                if (delx === 0) delx += 1;
                 dely = (v2p.y-v1p.y);
+                if (dely === 0) dely += 1;
                 d = Math.sqrt(delx*delx+dely*dely + 100.0);
                 change1[0] = delx*k_h*d;
                 change1[1] = dely*k_h*d;
@@ -869,7 +862,9 @@ giraph = (function(){
                     change1 = [0,0];
                     change2 = [0,0];
                     delx = (v2p.x-v1p.x);
+                    if (delx === 0) delx += 1;
                     dely = (v2p.y-v1p.y);
+                    if (dely === 0) dely += 1;
                     var dist = Math.sqrt(delx*delx+dely*dely + 100.0);
                     change1[0] = -delx*k_c/dist/dist + delx*k_h/3*dist;
                     change1[1] = -dely*k_c/dist/dist + dely*k_h/3*dist;
