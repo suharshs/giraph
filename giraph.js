@@ -9,6 +9,7 @@ giraph = (function(){
         var vertices = {}; // map of vertices indexed by id
         var edges = {}; // map of edges indexed by id
         this.visualization = undefined;
+        this.isdrag = false;
 
         // methods
         // add a vertex
@@ -17,6 +18,7 @@ giraph = (function(){
             var v = new vertex(id, weight, extra);
             vertices[id] = v;
             v.visualization = this.visualization;
+            v.drag(this.drag);
             return this;
         };
         // add an edge
@@ -31,6 +33,7 @@ giraph = (function(){
             var e = new edge(id, this.vertex(v1), this.vertex(v2), weight, extra);
             e.visualization = this.visualization;
             edges[id] = e;
+            e.draw();
             // only add in this direction
             vertices[v1]._out_neighbors[v2] = this.vertex(v2);
             vertices[v2]._in_neighbors[v1] = this.vertex(v1);
@@ -145,7 +148,16 @@ giraph = (function(){
                 }
             }
         };
-    };
+        // notifies the vertices about drag
+        this.drag = function(choice){
+            this.isdrag = choice;
+            if (this.visualization){
+                var verts = this.vertices();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].drag(choice);
+                }
+            }
+        };    };
 
     // private graph constructor
     var graph = function(){
@@ -153,6 +165,7 @@ giraph = (function(){
         var vertices = {}; // map of vertices indexed by id
         var edges = {}; // map of edges indexed by id
         this.visualization = undefined;
+        this.isdrag = false;
 
         // methods
         // add a vertex
@@ -161,6 +174,8 @@ giraph = (function(){
             var v = new vertex(id, weight, extra);
             vertices[id] = v;
             v.visualization = this.visualization;
+            v.draw();
+            v.drag(this.drag);
             return this;
         };
         // add an edge
@@ -175,6 +190,7 @@ giraph = (function(){
             var e = new edge(id, this.vertex(v1), this.vertex(v2), weight, extra);
             e.visualization = this.visualization;
             edges[id] = e;
+            e.draw();
             // only add in this direction
             vertices[v1]._out_neighbors[v2] = this.vertex(v2);
             vertices[v2]._out_neighbors[v1] = this.vertex(v1);
@@ -299,6 +315,7 @@ giraph = (function(){
         };
         // notifies the vertices about drag
         this.drag = function(choice){
+            this.isdrag = choice;
             if (this.visualization){
                 var verts = this.vertices();
                 for (var i = 0; i < verts.length; i++){
@@ -404,7 +421,7 @@ giraph = (function(){
         this.color = function(col){
             if (col === undefined) return color;
             color = col;
-            this.draw(); // update the visualization
+            this.draw(true); // update the visualization
             return this;
         };
         // getter and setter of position
@@ -495,25 +512,28 @@ giraph = (function(){
 
         // turns on and off drag events for the vertex
         this.drag = function(choice){
-            if (choice === true){
-                var that = this;
-                this.viselement.drag(function(dx,dy,x,y,e){
-                    that.position(x,y,true);
-                    /*this.attr({
-                        cx: x,
-                        cy: y});
-                    that.label.attr({
-                        x: x,
-                        y: y-10
-                    });
-                    that.weightlabel.attr({
-                        x: x,
-                        y: y+10
-                    });*/
-                },function(){},function(){});
-            }
-            else {
-                this.viselement.undrag();
+            if (this.viselement){
+                if (choice){
+                    var that = this;
+                    this.viselement.drag(function(dx,dy,x,y,e){
+                        that.position(x,y,true);
+                        /*this.attr({
+                            cx: x,
+                            cy: y});
+                        that.label.attr({
+                            x: x,
+                            y: y-10
+                        });
+                        that.weightlabel.attr({
+                            x: x,
+                            y: y+10
+                        });*/
+                    },function(){},function(){});
+                }
+                else {
+                    console.log("undrag");
+                    this.viselement.undrag();
+                }
             }
         };
     };
@@ -570,7 +590,7 @@ giraph = (function(){
         this.color = function(col){
             if (col === undefined) return color;
             color = col;
-            this.draw();
+            this.draw(true);
             return this;
         };
         // send the draw message to the visualization
@@ -617,6 +637,14 @@ giraph = (function(){
 
     // some sample algorithms
     var alg = {
+        // returns a list of the names all of the algorithms
+        all: function(){
+            return [
+                'kruskalMST',
+                'BFS',
+                'DFS'
+            ];
+        },
         animate: function(func,i,edge,vertex){
             window.setTimeout(function(){
                 func(edge);
@@ -895,10 +923,12 @@ giraph = (function(){
         // binds a graph to a visualization in a div and creates the visualization
         bind: function(id, graph, options){
             var v = new visualization(id,graph,options);
-            graph.draw();
             if (options.fd === false){
-                v.fd = false;
+                v.mode('drag');
+            } else {
+                v.mode('fd');
             }
+            graph.draw();
             v.force_direction();
             return v;
         }

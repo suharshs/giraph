@@ -1,0 +1,46 @@
+<!DOCTYPE html>  
+<html>  
+    <head>  
+        <title>GiraphViewer</title> 
+        <script src="./js/jquery-2.0.0.min.js"></script>
+        <script type="text/javascript" src="../resources/raphael-min.js"></script>
+        <script type="text/javascript" src="../giraph.js"></script>
+        <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="./css/bootstrap-responsive.min.css">
+        <link href='http://fonts.googleapis.com/css?family=Quicksand' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+    </head> 
+    <body> 
+        <!-- Navbar -->
+        <div class="navbar navbar-fixed-top">
+          <div class="navbar-inner">
+            <a class="brand title" href="#">giraphViewer</a>
+            <ul class="nav pull-right">
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  Algorithms
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                  <li role="presentation"><a role="menuitem">oink</a></li>
+                  <li role="presentation"><a role="menuitem">moo</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div> 
+        <div id="graph-pane" class="graph-pane"></div>
+        <div class="navbar navbar-fixed-bottom">
+          <div class="navbar-inner">
+            <ul class="nav padding-left">
+                <button id="addvertex" class="btn">Add Vertex</button>
+                <button id="addedge" class="btn">Add Edge</button>
+            </ul>
+            <ul class="nav pull-right">
+                <button id="fd" class="btn">Force Direction</button>
+            </ul>
+        </div>
+    </body>
+    <script type="text/javascript" src="./js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./js/vis.js"></script>
+</html>
