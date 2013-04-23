@@ -297,6 +297,15 @@ giraph = (function(){
                 }
             }
         };
+        // notifies the vertices about drag
+        this.drag = function(choice){
+            if (this.visualization){
+                var verts = this.vertices();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].drag(choice);
+                }
+            }
+        };
     };
 
     // private directed vertex constructor
@@ -304,6 +313,8 @@ giraph = (function(){
         var id, weight, extra, color, x=0, y=0;
         this.visualization = undefined; // will store the visualization object
         this.viselement = undefined;
+        this.label = undefined;
+        this.weightlabel = undefined;
         color = "rgba(220,50,50)";
         // set this vertex's information
         if (aid === undefined){
@@ -406,28 +417,58 @@ giraph = (function(){
                 update = true;
             }
             if (update){
-                this.draw(); // update the visualization
+                this.draw(true); // update the visualization
                 var edges = this.edges().concat(this.in_edges());
                 // update all of the edges that need to be redrawn
                 for (var i = 0; i < edges.length; i++){
-                    edges[i].draw();
+                    edges[i].draw(true);
                 }
             }
             return this;
         };
         // send the draw message to the visualization
-        this.draw = function(){
-            if (this.viselement){
+        this.draw = function(instant){
+            if (this.viselement && instant){
+                this.viselement.attr({
+                    cx: x,
+                    cy: y,
+                    fill: color
+                });
+                this.label.attr({
+                    x: x,
+                    y: y-10
+                });
+                this.weightlabel.attr({
+                    x: x,
+                    y: y+10
+                });
+            }
+            else if (this.viselement){
                 this.viselement.animate({
                     cx: x,
                     cy: y,
                     fill: color
                 },100);
+                this.label.animate({
+                    x: x,
+                    y: y-10
+                }, 100);
+                this.weightlabel.animate({
+                    x: x,
+                    y: y+10
+                }, 100);
             }
             else{
                 if (this.visualization){
                     this.viselement = this.visualization.canvas.circle(x, y, 25);
                     this.viselement.attr("fill", color);
+                    this.viselement.attr("title", String(weight));
+                    this.label = this.visualization.canvas.text(x,y-10, String(this.id()));
+                    this.label.attr("fill", "black");
+                    this.label.attr("font-size", 20);
+                    this.weightlabel = this.visualization.canvas.text(x,y+10, String(this.weight()));
+                    this.weightlabel.attr("fill", "black");
+                    this.weightlabel.attr("font-size", 15);
                     // add the drag event for this element
                     var that = this;
                     /* TODO: add vertex draggability option below
@@ -444,7 +485,35 @@ giraph = (function(){
         this.visclear = function(){
             if (this.viselement){
                 this.viselement.remove();
+                this.label.remove();
+                this.weightlabel.remove();
                 this.viselement = undefined;
+                this.label = undefined;
+                this.weightlabel = undefined;
+            }
+        };
+
+        // turns on and off drag events for the vertex
+        this.drag = function(choice){
+            if (choice === true){
+                var that = this;
+                this.viselement.drag(function(dx,dy,x,y,e){
+                    that.position(x,y,true);
+                    /*this.attr({
+                        cx: x,
+                        cy: y});
+                    that.label.attr({
+                        x: x,
+                        y: y-10
+                    });
+                    that.weightlabel.attr({
+                        x: x,
+                        y: y+10
+                    });*/
+                },function(){},function(){});
+            }
+            else {
+                this.viselement.undrag();
             }
         };
     };
@@ -455,6 +524,7 @@ giraph = (function(){
         color = 'rgb(50,250,50)';
         this.visualization = undefined; // will store the visualization object
         this.viselement = undefined;
+        this.weightlabel = undefined;
         // set this vertex's information
         if (aid === undefined || av1 === undefined || av2 === undefined){
             throw new Error("edge object requires an id and two endpoint vertices");
@@ -504,7 +574,7 @@ giraph = (function(){
             return this;
         };
         // send the draw message to the visualization
-        this.draw = function(){
+        this.draw = function(instant){
             var svert = this.endpoints()[0].position();
             var evert = this.endpoints()[1].position();
             var delx = evert.x-svert.x;
@@ -517,7 +587,13 @@ giraph = (function(){
             if (dely < 0){
                 y = -y;
             }
-            if (this.viselement){
+            if (this.viselement && instant){
+                this.viselement.attr({
+                    path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","),
+                    stroke: this.color()
+                });
+            }
+            else if (this.viselement){
                 this.viselement.animate({
                     path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","),
                     stroke: this.color()
@@ -541,7 +617,12 @@ giraph = (function(){
 
     // some sample algorithms
     var alg = {
-        kruskalMST: function(graph){
+        animate: function(func,i,edge,vertex){
+            window.setTimeout(function(){
+                func(edge);
+            }, (i+1)*1000);
+        },
+        kruskalMST: function(graph, edgefun){
             var MST = [];
             var weight = 0;
             var verts = graph.vertices();
@@ -560,6 +641,10 @@ giraph = (function(){
                 // if we can add this edge without creating a cycle
                 if (set[start] !== set[end]){
                     MST.push(edges[i]);
+                    // the the user passed in a function that changes the edges
+                    if (edgefun){
+                        this.animate(edgefun,i,edges[i]);
+                    }
                     weight += graph.edge(start, end).weight();
                     var set_keys = Object.keys(set);
                     // update the disjoint sets
@@ -666,15 +751,25 @@ giraph = (function(){
             height = options.height;
         }
 
+        // whether force direction is on or not
+        this.fd = true;
+
         this.canvas = Raphael(id, width, height);
         // computes and redraws the graph with force direction for 100 iteration
         this.force_direction = function(){
             /* TODO: Make this not run all of the time and tie this to a user defined boolean */
             // There must also be a better way to update the fd other than set interval
-            setInterval(function(){graph.draw();}, 100);
+            var that = this;
+            setInterval(function(){
+                if (that.fd){
+                    graph.draw();
+                }
+            }, 100);
             var id = setInterval(function(){
-                shift_centroid();
-                fd_iter();
+                if (that.fd){
+                    shift_centroid();
+                    fd_iter();
+                }
             }, 15);
         };
         // one iteration of force_direction
@@ -780,13 +875,32 @@ giraph = (function(){
                 verts[v].position(vp.x - xdiff, vp.y - ydiff,false);
             }
         };
+
+        // toggle between fd and draggability
+        // option must be either 'drag' or 'fd'
+        this.mode = function(option){
+            if (option === 'fd'){
+                this.fd = true;
+                graph.drag(false);
+            }
+            else if (option === 'drag'){
+                this.fd = false;
+                graph.drag(true);
+            }
+        };
     }
 
     // the visualizations for a graph
     var viz = {
         // binds a graph to a visualization in a div and creates the visualization
         bind: function(id, graph, options){
-            return new visualization(id,graph,options);
+            var v = new visualization(id,graph,options);
+            graph.draw();
+            if (options.fd === false){
+                v.fd = false;
+            }
+            v.force_direction();
+            return v;
         }
     };
 

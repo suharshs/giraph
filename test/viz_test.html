@@ -38,10 +38,6 @@
             height: 500
         });
         setTimeout(function(){
-            g.draw();
-            vis.force_direction();
-        }, 1000);
-        setTimeout(function(){
             g.add_vertex(3);
             g.add_vertex(100);
             g.vertex(3).position(900,50).color('rgb(0,200,0)');
@@ -80,6 +76,12 @@
         setTimeout(function(){
             g.remove_edge(1,2);
         }, 13000);
+        setTimeout(function(){
+            vis.mode('drag');
+        }, 15000);
+        setTimeout(function(){
+            vis.mode('fd');
+        }, 25000);
 
         
     </script>
