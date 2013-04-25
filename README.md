@@ -17,7 +17,7 @@ First download and include giraph.js in your html:
 <html>
  <head>
    ...
-   <script type="text/javascript" src="bonsai-0.4.1.min.js"></script>
+   <script type="text/javascript" src="raphaeljs.min.js"></script>
    <script type="text/javascript" src="giraph.js"></script>
    <script type="text/javascript" src="myfile.js"></script>
  </head>
@@ -35,3 +35,5 @@ g.add_edge(1,2).add_edge(2,3).add_edge(3,1); // adds three edges
 
 
 Feel free to contact me at [suharshs@gmail.com](mailto:suharshs@gmail.com) for any ideas or contribution you would like to make to giraph.
+
+giraph is available under the [MIT License](https://github.com/suharshs/giraph/blob/master/LICENSE).
