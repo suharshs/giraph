@@ -684,10 +684,15 @@ giraph = (function(){
                 func(edge);
             }, (i+1)*1000);
         },
-        kruskalMST: function(graph, edgefun){
+        kruskalMST: function(graph, edgefun, edgefun2){
             if (edgefun === undefined){
                 edgefun = function(e){
                     e.color("rgb(30,30,200)");
+                };
+            }
+            if (edgefun2 === undefined){
+                edgefun2 = function(e){
+                    e.color("rgb(200,0,0)");
                 };
             }
             var MST = [];
@@ -728,6 +733,10 @@ giraph = (function(){
                                 set[set_keys[k]] = set[end];
                             }
                         }
+                    }
+                } else{
+                    if (edgefun2){
+                        this.animate(edgefun2,i,edges[i]);
                     }
                 }
             }
