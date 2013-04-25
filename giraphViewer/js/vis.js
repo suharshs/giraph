@@ -12,6 +12,7 @@ var adde = false;
 
 // When the document is ready, create the empty graph
 $(document).ready(function(){
+    $("#weight").hide();
     graph = giraph.graph.graph();
     vis = giraph.viz.bind("graph-pane",graph,{
         fd: false,
@@ -35,30 +36,52 @@ $(document).ready(function(){
         }
     });
 
+    // clears the graph
+    $("#clear").click(function(e){
+        e.preventDefault();
+        graph.clear();
+        vertid = 0;
+    });
+
+    // performs kruskal's algorithm
+    $("#kruskalMST").click(function(e){
+        var results = giraph.alg.kruskalMST(graph);
+    });
+
     // toggle the adding vertex action
     $('#addvertex').click(function(e){
         e.preventDefault();
         addv = !addv;
         if (addv){
+            $("#weight").fadeIn();
             // unselect adding an edge
-            adde = !adde;
-            $("#addedge").removeClass("btn-success");
-            $("#addedge").addClass("btn-danger");
-            startvertex = endvertex = undefined;
-            $('circle').off('click');
+            if (adde){
+                adde = !adde;
+                $("#addedge").removeClass("btn-success");
+                $("#addedge").addClass("btn-danger");
+                startvertex = endvertex = undefined;
+                $('circle').off('click');
+            }
 
             $("#addvertex").removeClass("btn-danger");
             $("#addvertex").addClass("btn-success");
             // now bind button click functions on the svg
             $("#graph-pane > svg").click(function(e){
                 e.preventDefault();
-                graph.add_vertex(vertid);
+                var weight = Number($("#weight").val());
+                if (isNaN(weight)){
+                    graph.add_vertex(vertid);
+                }
+                else {
+                    graph.add_vertex(vertid, weight);
+                }
                 // ensure verts don't get placed on top of each other
                 graph.vertex(vertid).position(e.pageX, e.pageY);
                 vertid++;
             });
         }
         else{
+            $("#weight").fadeOut();
             $("#addvertex").removeClass("btn-success");
             $("#addvertex").addClass("btn-danger");
             $("#graph-pane > svg").off('click');
@@ -72,11 +95,14 @@ $(document).ready(function(){
         e.preventDefault();
         adde = !adde;
         if (adde){
+            $("#weight").fadeIn();
             // unselect adding a vertex
-            addv = !addv;
-            $("#addvertex").removeClass("btn-success");
-            $("#addvertex").addClass("btn-danger");
-            $("#graph-pane > svg").off('click');
+            if (addv) {
+                addv = !addv;
+                $("#addvertex").removeClass("btn-success");
+                $("#addvertex").addClass("btn-danger");
+                $("#graph-pane > svg").off('click');
+            }
 
             $("#addedge").removeClass("btn-danger");
             $("#addedge").addClass("btn-success");
@@ -91,13 +117,20 @@ $(document).ready(function(){
                         endvertex = undefined;
                     }
                     if (endvertex !== undefined){
-                        graph.add_edge(startvertex, endvertex);
+                        var weight = Number($("#weight").val());
+                        if (isNaN(weight)){
+                            graph.add_edge(startvertex, endvertex);
+                        }
+                        else {
+                            graph.add_edge(startvertex, endvertex, weight);
+                        }
                         startvertex = endvertex = undefined;
                     }
                 }
             });
         }
         else{
+            $("#weight").fadeOut();
             $("#addedge").removeClass("btn-success");
             $("#addedge").addClass("btn-danger");
             startvertex = endvertex = undefined;

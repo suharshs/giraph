@@ -22,8 +22,8 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                  <li role="presentation"><a role="menuitem">oink</a></li>
-                  <li role="presentation"><a role="menuitem">moo</a></li>
+                  <li id ="kruskalMST" role="presentation"><a role="menuitem">kruskalMST</a></li>
+                  <li role="presentation"><a role="menuitem">BFS(todo)</a></li>
                 </ul>
               </li>
             </ul>
@@ -33,11 +33,15 @@
         <div class="navbar navbar-fixed-bottom">
           <div class="navbar-inner">
             <ul class="nav padding-left">
-                <button id="addvertex" class="btn btn-danger">Add Vertex</button>
-                <button id="addedge" class="btn btn-danger">Add Edge</button>
+                <button id="addvertex" class="btn btn-danger" data-toggle="button">Add Vertex</button>
+                <button id="addedge" class="btn btn-danger" data-toggle="button">Add Edge</button>
+                <button id="clear" class="btn btn-danger">Clear</button>
             </ul>
+            <form class="navbar-form pull-left">
+              <input id="weight" type="text" placeholder="Add number weight here...">
+            </form>
             <ul class="nav pull-right">
-                <button id="fd" class="btn btn-danger">Force Direction</button>
+                <button id="fd" class="btn btn-danger" data-toggle="button">Force Direction</button>
             </ul>
         </div>
     </body>

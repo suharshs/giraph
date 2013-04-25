@@ -157,7 +157,24 @@ giraph = (function(){
                     verts[i].drag(choice);
                 }
             }
-        };    };
+        };
+        // clears the graph
+        this.clear = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edgs = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].visclear();
+                }
+                for (i = 0; i < edgs.length; i++){
+                    edgs[i].visclear();
+                }
+            }
+            edge_id = 0;
+            vertices = {};
+            edges = {};
+        };
+    };
 
     // private graph constructor
     var graph = function(){
@@ -322,6 +339,22 @@ giraph = (function(){
                     verts[i].drag(choice);
                 }
             }
+        };
+        // clears the graph
+        this.clear = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edgs = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].visclear();
+                }
+                for (i = 0; i < edgs.length; i++){
+                    edgs[i].visclear();
+                }
+            }
+            edge_id = 0;
+            vertices = {};
+            edges = {};
         };
     };
 
@@ -522,7 +555,6 @@ giraph = (function(){
                     },function(){},function(){});
                 }
                 else {
-                    console.log("undrag");
                     this.viselement.undrag();
                 }
             }
@@ -603,17 +635,28 @@ giraph = (function(){
                     path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","),
                     stroke: this.color()
                 });
+                this.weightlabel.attr({
+                    x: svert.x+delx/2,
+                    y: svert.y+dely/2
+                });
             }
             else if (this.viselement){
                 this.viselement.animate({
                     path: ["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","),
                     stroke: this.color()
                 },100);
+                this.weightlabel.animate({
+                    x: svert.x+delx/2,
+                    y: svert.y+dely/2
+                },100);
             }
             else {
                 if (this.visualization){
                     this.viselement = this.visualization.canvas.path(["M", svert.x+x,svert.y+y,"L", evert.x-x,evert.y-y].join(","));
                     this.viselement.attr({stroke: this.color()});
+                    this.weightlabel = this.visualization.canvas.text(svert.x+delx/2,svert.y+dely/2,String(weight));
+                    this.weightlabel.attr("fill", "rgb(255,255,255)");
+                    this.weightlabel.attr("font-size", 12);
                 }
             }
         };
@@ -642,6 +685,11 @@ giraph = (function(){
             }, (i+1)*1000);
         },
         kruskalMST: function(graph, edgefun){
+            if (edgefun === undefined){
+                edgefun = function(e){
+                    e.color("rgb(30,30,200)");
+                };
+            }
             var MST = [];
             var weight = 0;
             var verts = graph.vertices();
