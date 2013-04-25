@@ -1,0 +1,17 @@
+Manual test plan for giraphViewer
+
+1) Each button except for the clear button should toggle between green and red. Green if it is active.
+
+2) If add vertex button is selected and you click on the canvas, you should see a new vertex appear.
+
+3) If add edge is selected and you click on two different edges a new edge should appear.
+
+4) If force direction is on, then the graph should automatically rearrange and center.
+
+5) If force direction is off, then the graph should be draggable.
+
+6) The clear button should empty the graph.
+
+7) When adding a vertex and edge, a text box should appear that allows you to set the weight of the vertices and edges.
+
+8) The algorithms dropdown should have a working kruskal algorithm which marks the edges in the MST as blue and red otherwise.
