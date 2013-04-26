@@ -757,20 +757,12 @@ giraph = (function(){
                     weight += graph.edge(start, end).weight();
                     var set_keys = Object.keys(set);
                     // update the disjoint sets
-                    if (set[start] < set[end]){
-                        for (var j = 0; j < set_keys.length; j++){
-                            if (set[set_keys[j]] === set[end]){
-                                set[set_keys[j]] = set[start];
-                            }
+                    for (var j = 0; j < set_keys.length; j++){
+                        if (j !== end && set[set_keys[j]] === set[end]){
+                            set[set_keys[j]] = set[start];
                         }
                     }
-                    else {
-                        for (var k = 0; k < set_keys.length; k++){
-                            if (set[set_keys[k]] === set[start]){
-                                set[set_keys[k]] = set[end];
-                            }
-                        }
-                    }
+                    set[end] = set[start];
                 } else{
                     if (edgefun2){
                         this.animate(edgefun2,i,edges[i]);
