@@ -43,6 +43,10 @@ $(document).ready(function(){
         vertid = 0;
     });
 
+    $("#reset").click(function(e){
+        graph.reset();
+    });
+
     // performs kruskal's algorithm
     $("#kruskalMST").click(function(e){
         var results = giraph.alg.kruskalMST(graph);
@@ -59,6 +63,9 @@ $(document).ready(function(){
                 adde = !adde;
                 $("#addedge").removeClass("btn-success");
                 $("#addedge").addClass("btn-danger");
+                if (startvertex){
+                    graph.vertex(startvertex).reset();
+                }
                 startvertex = endvertex = undefined;
                 $('circle').off('click');
             }
@@ -109,6 +116,7 @@ $(document).ready(function(){
             $('circle').click(function(e){
                 if (startvertex === undefined){
                     startvertex = $(this).parent().attr("title");
+                    graph.vertex(startvertex).color("rgb(255,255,255)");
                 }
                 else {
                     endvertex = $(this).parent().attr("title");
@@ -124,6 +132,7 @@ $(document).ready(function(){
                         else {
                             graph.add_edge(startvertex, endvertex, weight);
                         }
+                        graph.vertex(startvertex).reset();
                         startvertex = endvertex = undefined;
                     }
                 }

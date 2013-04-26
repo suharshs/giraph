@@ -174,6 +174,19 @@ giraph = (function(){
             vertices = {};
             edges = {};
         };
+        // resets the graph
+        this.reset = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edgs = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].reset();
+                }
+                for (i = 0; i < edgs.length; i++){
+                    edgs[i].reset();
+                }
+            }
+        };
     };
 
     // private graph constructor
@@ -355,6 +368,19 @@ giraph = (function(){
             edge_id = 0;
             vertices = {};
             edges = {};
+        };
+        // resets the graph
+        this.reset = function(){
+            if (this.visualization){
+                var verts = this.vertices();
+                var edgs = this.edges();
+                for (var i = 0; i < verts.length; i++){
+                    verts[i].reset();
+                }
+                for (i = 0; i < edgs.length; i++){
+                    edgs[i].reset();
+                }
+            }
         };
     };
 
@@ -559,6 +585,10 @@ giraph = (function(){
                 }
             }
         };
+        // resets the vertex
+        this.reset = function(){
+            this.color("rgba(220,50,50)");
+        };
     };
 
     // private edge constructor
@@ -665,7 +695,13 @@ giraph = (function(){
             if (this.viselement){
                 this.viselement.remove();
                 this.viselement = undefined;
+                this.weightlabel.remove();
+                this.weightlabel = undefined;
             }
+        };
+        // resets the vertex
+        this.reset = function(){
+            this.color("rgb(50,250,50)");
         };
     };
 
@@ -679,10 +715,11 @@ giraph = (function(){
                 'DFS'
             ];
         },
-        animate: function(func,i,edge,vertex){
+        animate: function(func,i,component){
+            var animaterate = 1000;
             window.setTimeout(function(){
-                func(edge);
-            }, (i+1)*1000);
+                func(component);
+            }, (i+1)*animaterate);
         },
         kruskalMST: function(graph, edgefun, edgefun2){
             if (edgefun === undefined){

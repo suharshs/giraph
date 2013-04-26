@@ -24,3 +24,12 @@ text{
 .padding-left{
     padding-left: 20px;
 }
+
+.me{
+    padding-top:20px;
+}
+
+.me > .melink{
+    display:inline;
+    font-size:14px;
+}
