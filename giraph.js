@@ -846,6 +846,9 @@ giraph = (function(){
         graph.viz(this);
         /* TODO: must be a way to tie edge length to number of verts and width and height */
         var edgelength = 300;
+        if (options && options.edgelength){
+            edgelength = options.edgelength;
+        }
         var k_c = edgelength*(6-3*(150/(3*edgelength))); // tying k_c to edge_length removes force overcorrection
         var k_h = k_c/Math.pow(edgelength,3);
         var width = 500, height = 500;
