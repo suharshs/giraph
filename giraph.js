@@ -18,7 +18,7 @@ giraph = (function(){
             var v = new vertex(id, weight, extra);
             vertices[id] = v;
             v.visualization = this.visualization;
-            v.drag(this.drag);
+            v.drag(this.isdrag);
             return this;
         };
         // add an edge
@@ -205,7 +205,7 @@ giraph = (function(){
             vertices[id] = v;
             v.visualization = this.visualization;
             v.draw();
-            v.drag(this.drag);
+            v.drag(this.isdrag);
             return this;
         };
         // add an edge
