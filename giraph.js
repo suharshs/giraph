@@ -766,15 +766,12 @@ giraph = (function(){
         var endpoints = edges[i].endpoints();
         var start = endpoints[0].id();
         var end = endpoints[1].id();
-        // if we can add this edge without creating a cycle
         if (dsets.find(start) !== dsets.find(end)){
           MST.push(edges[i]);
-          // the the user passed in a function that changes the edges
           if (edgefun){
             this.animate(edgefun,i,edges[i]);
           }
           weight += graph.edge(start, end).weight();
-          // update the disjoint sets
           dsets.setunion(start, end);
         } else{
           if (edgefun2){
