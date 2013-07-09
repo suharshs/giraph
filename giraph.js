@@ -694,158 +694,6 @@ giraph = (function(){
     };
   };
 
-  var util = (function() {
-    var disjoint_set = function(size){
-      var sets = [];
-      for (var i = 0; i < size; ++i) {
-        sets.push(-1);
-      }
-
-      this.find = function(n){
-        if (sets[n] < 0){
-          return n;
-        } else {
-          return (sets[n] = this.find(sets[n]));
-        }
-      };
-
-      this.setunion = function(first, second) {
-        var r1 = this.find(first);
-        var r2 = this.find(second);
-        sets[r1] = r2;
-      };
-    };
-
-    return {
-      disjoint_set: function(size){
-        return new disjoint_set(size);
-      }
-    };
-  })();
-
-  // some sample algorithms
-  var alg = {
-    // returns a list of the names all of the algorithms
-    all: function(){
-      return [
-        'kruskalMST',
-        'BFS',
-        'DFS'
-      ];
-    },
-    animate: function(func,i,component){
-      var animaterate = 1000;
-      window.setTimeout(function(){
-        func(component);
-      }, (i+1)*animaterate);
-    },
-    kruskalMST: function(graph, edgefun, edgefun2){
-      if (edgefun === undefined){
-        edgefun = function(e){
-          e.color("rgb(30,30,200)");
-        };
-      }
-      if (edgefun2 === undefined){
-        edgefun2 = function(e){
-          e.color("rgb(200,0,0)");
-        };
-      }
-      var MST = [];
-      var weight = 0;
-      var verts = graph.vertices();
-      var set = {};
-      var dsets = util.disjoint_set(verts.length);
-      // sort the edges from lowest weight to highest weight
-      var edges = graph.edges(function(a,b){
-        return a.weight()-b.weight();
-      });
-      for (var i = 0; i < verts.length; i++){
-        set[verts[i].id()] = i;
-      }
-      for (i = 0; i < edges.length; i++){
-        var endpoints = edges[i].endpoints();
-        var start = endpoints[0].id();
-        var end = endpoints[1].id();
-        if (dsets.find(start) !== dsets.find(end)){
-          MST.push(edges[i]);
-          if (edgefun){
-            this.animate(edgefun,i,edges[i]);
-          }
-          weight += graph.edge(start, end).weight();
-          dsets.setunion(start, end);
-        } else{
-          if (edgefun2){
-            this.animate(edgefun2,i,edges[i]);
-          }
-        }
-      }
-      return {MST: MST, weight: weight};
-    },
-    // the abstract search function
-    // orderingStucture must have add, size, and remove functions
-    search: function(graph, orderingStructure, start, target){
-      var reached = {};
-      orderingStructure.add(start);
-      var order = [];
-      var steps = 0;
-      while (orderingStructure.size() > 0){
-        steps++;
-        var current = orderingStructure.remove();
-        reached[current] = true;
-        if (current === target){
-          return {vertex: graph.vertex(current), order: order};
-        }
-        var neighbors = graph.vertex(current).neighbors();
-        order.push(current);
-        // add unreached neighbors
-        for (var i = 0; i < neighbors.length; i++){
-          if (!(neighbors[i].id() in reached || orderingStructure.exists(neighbors[i].id()))){
-            orderingStructure.add(neighbors[i].id());
-          }
-        }
-      }
-      return false; // not connected
-    },
-    // BFS Search
-    BFS: function(graph, start, target){
-      var orderingStructure = function(){
-        var verts = [];
-        this.add = function(v){
-          verts.push(v);
-        };
-        this.remove =  function(){
-          return verts.shift();
-        };
-        this.size = function(){
-          return verts.length;
-        };
-        this.exists = function(v){
-          return verts.indexOf(v) != -1;
-        };
-      };
-      return this.search(graph, new orderingStructure(), start, target);
-    },
-    // DFS Search
-    DFS: function(graph, start, target){
-      var orderingStructure = function(){
-        var verts = [];
-        this.add = function(v){
-          verts.push(v);
-        };
-        this.remove =  function(){
-          return verts.pop();
-        };
-        this.size = function(){
-          return verts.length;
-        };
-        this.exists = function(v){
-          return verts.indexOf(v) != -1;
-        };
-      };
-      return this.search(graph, new orderingStructure(), start, target);
-    }
-  };
-
   // the visualization object
   function visualization(aid, agraph, options) {
     if (aid === undefined || agraph === undefined){
@@ -1011,6 +859,164 @@ giraph = (function(){
       }
     };
   }
+
+  var util = (function() {
+    var disjoint_set = function(size){
+      var sets = [];
+      for (var i = 0; i < size; ++i) {
+        sets.push(-1);
+      }
+
+      this.find = function(n){
+        if (sets[n] < 0){
+          return n;
+        } else {
+          return (sets[n] = this.find(sets[n]));
+        }
+      };
+
+      this.setunion = function(first, second) {
+        var r1 = this.find(first);
+        var r2 = this.find(second);
+        sets[r1] = r2;
+      };
+    };
+
+    return {
+      disjoint_set: function(size){
+        return new disjoint_set(size);
+      }
+    };
+  })();
+
+  // some sample algorithms
+  var alg = {
+    // returns a list of the names all of the algorithms
+    all: function(){
+      return [
+        'kruskalMST',
+        'BFS',
+        'DFS'
+      ];
+    },
+    animate: function(func,i,component,animaterate){
+      if (animaterate === undefined) {
+        animaterate = 1000;
+      }
+      window.setTimeout(function(){
+        func(component);
+      }, (i+1)*animaterate);
+    },
+    kruskalMST: function(graph, edgefun, edgefun2){
+      if (edgefun === undefined){
+        edgefun = function(e){
+          e.color("rgb(30,30,200)");
+        };
+      }
+      if (edgefun2 === undefined){
+        edgefun2 = function(e){
+          e.color("rgb(200,0,0)");
+        };
+      }
+      var MST = [];
+      var weight = 0;
+      var verts = graph.vertices();
+      var set = {};
+      var dsets = util.disjoint_set(verts.length);
+      // sort the edges from lowest weight to highest weight
+      var edges = graph.edges(function(a,b){
+        return a.weight()-b.weight();
+      });
+      for (var i = 0; i < verts.length; i++){
+        set[verts[i].id()] = i;
+      }
+      for (i = 0; i < edges.length; i++){
+        var endpoints = edges[i].endpoints();
+        var start = endpoints[0].id();
+        var end = endpoints[1].id();
+        if (dsets.find(start) !== dsets.find(end)){
+          MST.push(edges[i]);
+          this.animate(edgefun,i,edges[i]);
+          weight += graph.edge(start, end).weight();
+          dsets.setunion(start, end);
+        } else{
+          this.animate(edgefun2,i,edges[i]);
+        }
+      }
+      return {MST: MST, weight: weight};
+    },
+    // the abstract search function
+    // orderingStucture must have add, size, and remove functions
+    search: function(graph, orderingStructure, start, target, colorfun){
+      if (colorfun === undefined) {
+        colorfun = function(c){
+          c.color("rgb(30,30,200)");
+        };
+      }
+      var reached = {};
+      orderingStructure.add(start);
+      var order = [];
+      var steps = 0;
+      while (orderingStructure.size() > 0){
+        steps++;
+        var current = orderingStructure.remove();
+        reached[current] = true;
+        this.animate(colorfun, steps, graph.vertex(current), 500);
+        if (current === target){
+          return {vertex: graph.vertex(current), order: order};
+        }
+        var neighbors = graph.vertex(current).neighbors();
+        order.push(current);
+        // add unreached neighbors
+        for (var i = 0; i < neighbors.length; i++){
+          if (!(neighbors[i].id() in reached || orderingStructure.exists(neighbors[i].id()))){
+            orderingStructure.add(neighbors[i].id());
+          }
+        }
+      }
+      return false; // not connected
+    },
+    // BFS Search
+    BFS: function(graph, start, target){
+      var orderingStructure = function(){
+        var verts = [];
+        this.add = function(v){
+          console.log(verts);
+          verts.push(v);
+        };
+        this.remove =  function(){
+          console.log(verts);
+          return verts.shift();
+        };
+        this.size = function(){
+          return verts.length;
+        };
+        this.exists = function(v){
+          return verts.indexOf(v) != -1;
+        };
+      };
+      return this.search(graph, new orderingStructure(), start, target);
+    },
+    // DFS Search
+    DFS: function(graph, start, target){
+      var orderingStructure = function(){
+        var verts = [];
+        this.add = function(v){
+          verts.push(v);
+        };
+        this.remove =  function(){
+          return verts.pop();
+        };
+        this.size = function(){
+          return verts.length;
+        };
+        this.exists = function(v){
+          return verts.indexOf(v) != -1;
+        };
+      };
+      return this.search(graph, new orderingStructure(), start, target);
+    }
+  };
 
   // the visualizations for a graph
   var viz = {
