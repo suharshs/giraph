@@ -958,10 +958,13 @@ giraph = (function(){
       var order = [];
       var steps = 0;
       while (orderingStructure.size() > 0){
-        steps++;
         var current = orderingStructure.remove();
+        if (current in reached){
+          continue;
+        }
+        steps++;
         reached[current] = true;
-        this.animate(colorfun, steps, graph.vertex(current), 500);
+        this.animate(colorfun, steps-1, graph.vertex(current), 500);
         if (current === target){
           return {vertex: graph.vertex(current), order: order};
         }
@@ -969,9 +972,7 @@ giraph = (function(){
         order.push(current);
         // add unreached neighbors
         for (var i = 0; i < neighbors.length; i++){
-          if (!(neighbors[i].id() in reached || orderingStructure.exists(neighbors[i].id()))){
-            orderingStructure.add(neighbors[i].id());
-          }
+          orderingStructure.add(neighbors[i].id());
         }
       }
       return false; // not connected
